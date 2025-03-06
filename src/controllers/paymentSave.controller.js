@@ -1,9 +1,6 @@
-
 import { Payment } from "../models/paymentSave.model.js";
 import { Cart } from "../models/cart.model.js";
 import { ApiError } from "../utils/ApiError.js";
-
-
 
 const paymentStore = async (req, res, next) => {
 
@@ -62,9 +59,9 @@ const paymentStore = async (req, res, next) => {
 
 }
 
-const getMyPaymentsInfo=async (req,res,next)=>{
+const getMyPaymentsInfo = async (req, res, next) => {
     try {
-        const myPayments=await Payment.find({userId:req.user._id})
+        const myPayments = await Payment.find({ userId: req.user._id })
 
         res.status(200).json({
             success: true,
@@ -72,11 +69,11 @@ const getMyPaymentsInfo=async (req,res,next)=>{
             myPayments,
         });
     } catch (error) {
-        next(new ApiError(400,"Error occur while getting payment ",error.message))
+        next(new ApiError(400, "Error occur while getting payment ", error.message))
     }
 }
 
-const esimWebHook=async(req,res,next)=>{
+const esimWebHook = async (req, res, next) => {
     try {
         const { notifyType, content } = req.body;
 
@@ -86,14 +83,14 @@ const esimWebHook=async(req,res,next)=>{
 
         const { orderNo, transactionId, iccid, remain, esimStatus, smdpStatus, totalVolume, expiredTime } = content;
 
-      
+
         const payment = await Payment.findOne({ orderNo });
 
         if (!payment) {
             return res.status(404).json({ error: "Payment record not found for the given orderNo" });
         }
 
-      
+
         switch (notifyType) {
             case "ORDER_STATUS":
                 // Example: You might want to log the order status or update a field in the payment record
@@ -110,12 +107,12 @@ const esimWebHook=async(req,res,next)=>{
 
             case "DATA_USAGE":
                 console.log(`Data usage alert for eSIM with ICCID ${iccid}. Remaining data: ${remain}MB`);
-               
+
                 break;
 
             case "VALIDITY_USAGE":
                 console.log(`Validity alert for eSIM with ICCID ${iccid}. Remaining days: ${remain}`);
-              
+
                 break;
 
             default:
@@ -123,7 +120,6 @@ const esimWebHook=async(req,res,next)=>{
                 break;
         }
 
-      
         await payment.save();
 
         res.status(200).json({ success: true });
@@ -135,4 +131,4 @@ const esimWebHook=async(req,res,next)=>{
 }
 
 
-export { paymentStore,getMyPaymentsInfo,esimWebHook }
+export { paymentStore, getMyPaymentsInfo, esimWebHook }

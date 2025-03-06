@@ -1,7 +1,7 @@
 import axios from "axios";
 import Stripe from "stripe";
-import {Cart} from "../models/cart.model.js"
-import { PAYPAL_API_BASE,PAYPAL_CLIENT_KEY,PAYPAL_SECRET_KEY ,STRIPE_SECRET_KEY} from "../config/env.js";
+import { Cart } from "../models/cart.model.js"
+import { PAYPAL_API_BASE, PAYPAL_CLIENT_KEY, PAYPAL_SECRET_KEY, STRIPE_SECRET_KEY } from "../config/env.js";
 import { ApiError } from "../utils/ApiError.js";
 // PayPal API base URL
 // const PAYPAL_API = process.env.PAYPAL_API_BASE;
@@ -9,8 +9,6 @@ import { ApiError } from "../utils/ApiError.js";
 // const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
 
 const stripe = new Stripe(STRIPE_SECRET_KEY);
-
-
 
 const getAccessToken = async () => {
   try {
@@ -84,7 +82,7 @@ const paypalGenerateOrderId = async (req, res, next) => {
 };
 
 const payapalcaptureOrder = async (req, res, next) => {
-  const { orderId,currency_code} = req.body;
+  const { orderId, currency_code } = req.body;
 
   try {
     const accessToken = await getAccessToken();
@@ -103,7 +101,7 @@ const payapalcaptureOrder = async (req, res, next) => {
     const captureData = captureResponse.data;
 
     // Validate the cart and total amount
-    const cart = await Cart.findOne({ userId:req.user._id });
+    const cart = await Cart.findOne({ userId: req.user._id });
 
     if (!cart || cart.items.length === 0) {
       throw new ApiError(400, "Cart is empty. Cannot proceed with the order.");
@@ -112,11 +110,11 @@ const payapalcaptureOrder = async (req, res, next) => {
     const packageInfoList = cart.items.map((item) => ({
       packageCode: item.productId,
       count: item.productQuantity,
-      price: item.productPrice*1000,
+      price: item.productPrice * 1000,
     }));
 
-    const totalAmount = cart.totalPrice*1000;
-  
+    const totalAmount = cart.totalPrice * 1000;
+
     res.json({
       success: true,
       message: "Payment captured successfully.",
@@ -124,7 +122,7 @@ const payapalcaptureOrder = async (req, res, next) => {
       currency_code,
       transactionId: captureData.id,
       amount: totalAmount,
-      currency_code:"USD",
+      currency_code: "USD",
       payer: captureData.payer,
       packageInfoList
     });

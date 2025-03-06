@@ -35,6 +35,7 @@ dotenv.config({ path: "./.env" });
 initializeFacebookStrategy(passport);
 initializeGoogleStrategy(passport);
 initializeAppleStrategy(passport)
+
 // Middleware
 app.use(passport.initialize());
 app.use(express.json({ limit: "16kb" }));
@@ -47,10 +48,11 @@ app.use(cookieParser()); // Cookie parsing middleware
 // CORS configuration
 app.use(
   cors({
-    origin: ORIGIN,
-    credentials: true,
+    origin: ["http://localhost:5173", ORIGIN],
+    credentials: true, // Allow cookies & authentication headers
   })
 );
+
 
 // Configure rate limiter
 const limiter = rateLimit({

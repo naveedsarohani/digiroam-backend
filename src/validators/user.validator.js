@@ -20,8 +20,8 @@ const updateProfileSchema = joi.object({
   name: joi.string().min(3).required(),
   email: joi.string().email().required(),
   phoneNumber: joi.string().min(10).max(15).required(),
-  address:joi.string().required(),
-   countryID: joi.string().required()
+  address: joi.string().required(),
+  countryID: joi.string().required()
 });
 
 const sendoptSchema = joi.object({
@@ -29,8 +29,8 @@ const sendoptSchema = joi.object({
 });
 
 const changeCurrentPasswordSchema = joi.object({
-    oldPassword:joi.string().required().min(8), 
-    newPassword:joi.string().required().min(8) 
+  oldPassword: joi.string().required().min(8),
+  newPassword: joi.string().required().min(8)
 })
 
 const verifyotpSchema = joi.object({
@@ -39,14 +39,15 @@ const verifyotpSchema = joi.object({
 });
 
 
-const forgotPasswordRequestSchema = joi.object ({
-    email: joi.string().email().required(),
+const forgotPasswordRequestSchema = joi.object({
+  email: joi.string().email().required(),
 })
 
 const verifyForgotPassOtpVerificationSchema = joi.object({
-    email: joi.string().email().required(),
-    otp: joi.string().min(6).required(),
-  });
+  email: joi.string().email().required(),
+  otp: joi.string().min(6).required(),
+});
+
 export {
   verifyOtpSchema,
   createUserAndSendOtpSchema,
