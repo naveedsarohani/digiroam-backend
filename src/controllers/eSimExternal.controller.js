@@ -76,6 +76,7 @@ const orderProfiles = async (req, res, next) => {
     };
 
     const body = req.body;
+    body.price = (body.price * 10000).toFixed(0);
 
     const orderProfile = await axios.post(
       process.env.GET_ORDER_PROFILE_URL,
