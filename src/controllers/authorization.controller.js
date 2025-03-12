@@ -13,9 +13,14 @@ const register = async (req, res) => {
     try {
         const { name, email, password } = req.body;
 
-        await User.create({ name, email, password, accountType: 2, userRole: 2 });
-        return res.response(201, "A new admin account has been registered successfully");
+        const existingUser = await User.findOne({ email });
+        if (existingUser) return res.response(400, "Email is already in use.");
+
+        const admin = await User.create({ name, email, password, accountType: 2, userRole: 2 });
+
+        return res.response(201, "A new admin account has been registered successfully.", { admin });
     } catch (error) {
+        console.error("Register Error:", error);
         return res.response(400, "Failed to register an admin account", { error: error.message });
     }
 }

@@ -7,7 +7,7 @@ import { auth } from "../middeware/auth.js";
 const authorizationRoutes = Router({ mergeParams: true });
 
 authorizationRoutes.get("/view-admins",
-    auth, authorizationController.admin.index
+    authorizationController.admin.index
 );
 
 authorizationRoutes.post("/register-admin",

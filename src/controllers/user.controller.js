@@ -129,7 +129,7 @@ const login = async (req, res, next) => {
   try {
     const user = await User.findOne({ email });
     if (!user) {
-      return next(new ApiError(400, "email or Password is incorrect "));
+      return next(new ApiError(400, "email or Password is incorrect"));
     }
 
     const checkPassword = await user.isPasswordCorrect(password);
