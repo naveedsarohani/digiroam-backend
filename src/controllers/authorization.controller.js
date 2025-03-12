@@ -16,7 +16,7 @@ const register = async (req, res) => {
         const existingUser = await User.findOne({ email });
         if (existingUser) return res.response(400, "Email is already in use.");
 
-        const admin = await User.create({ name, email, password, accountType: 2, userRole: 2 });
+        const admin = await User.create({ name, email, password, accountType: 2, userRole: 2, verified: true });
         return res.response(201, "A new admin account has been registered successfully.", { admin });
     } catch (error) {
         console.error("Register Error:", error);
