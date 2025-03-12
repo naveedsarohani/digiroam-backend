@@ -7,8 +7,7 @@ import emailController from "../controllers/email.controller.js";
 const emailRoutes = Router({ mergeParams: true });
 
 emailRoutes.post("/send",
-    // auth, validate(emailSchema.send), emailController.send
-    validate(emailSchema.send), emailController.send
+    auth, validate(emailSchema.send), emailController.send
 );
 
 export default emailRoutes;

@@ -8,19 +8,19 @@ import file from "../middeware/file.js";
 const emailTemplateRoutes = Router({ mergeParams: true });
 
 emailTemplateRoutes.get("/",
-    emailTemplateController.index
+    auth, emailTemplateController.index
 );
 emailTemplateRoutes.get("/:emailTemplateId",
-    emailTemplateController.show
+    auth, emailTemplateController.show
 );
 emailTemplateRoutes.post("/",
-    file.save("attachments", 5), validate(emailTemplateSchema.create), emailTemplateController.create
+    auth, file.save("attachments", 5), validate(emailTemplateSchema.create), emailTemplateController.create
 );
 emailTemplateRoutes.patch("/:emailTemplateId",
-    file.save("attachments", 5), validate(emailTemplateSchema.update), emailTemplateController.update
+    auth, file.save("attachments", 5), validate(emailTemplateSchema.update), emailTemplateController.update
 );
 emailTemplateRoutes.delete("/:emailTemplateId",
-    emailTemplateController.delete
+    auth, emailTemplateController.delete
 );
 
 export default emailTemplateRoutes;
