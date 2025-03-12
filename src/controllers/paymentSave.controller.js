@@ -3,7 +3,6 @@ import { Cart } from "../models/cart.model.js";
 import { ApiError } from "../utils/ApiError.js";
 
 const paymentStore = async (req, res, next) => {
-
     const {
         transactionId,
         amount,
@@ -18,11 +17,7 @@ const paymentStore = async (req, res, next) => {
         throw new ApiError(400, "All Fields are require.");
     }
 
-
-
     try {
-
-
         // Check if the payment already exists
         const existingPayment = await Payment.findOne({ transactionId });
         if (existingPayment) {
@@ -34,14 +29,12 @@ const paymentStore = async (req, res, next) => {
             userId: req.user._id,
             transactionId,
             amount,
-            currency: currency || "USD",
+            currency: currency ?? "USD",
             status: "COMPLETED",
             payer,
             packageInfoList,
             orderNo,
         });
-
-
 
         // Clear the user's cart
         await Cart.findOneAndDelete({ userId: req.user._id });
@@ -51,7 +44,6 @@ const paymentStore = async (req, res, next) => {
             message: "Payment stored successfully, and cart cleared.",
             payment,
         });
-
 
     } catch (error) {
         next(error);
@@ -73,7 +65,7 @@ const getMyPaymentsInfo = async (req, res, next) => {
     }
 }
 
-const esimWebHook = async (req, res, next) => {
+const esimWebHook = async (req, res) => {
     try {
         const { notifyType, content } = req.body;
 
@@ -129,6 +121,5 @@ const esimWebHook = async (req, res, next) => {
     }
 
 }
-
 
 export { paymentStore, getMyPaymentsInfo, esimWebHook }

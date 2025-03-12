@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { ACCESS_TOKEN_EXPIRY ,ACCESS_TOKEN_SECRET} from "../config/env.js";
+import { ACCESS_TOKEN_EXPIRY, ACCESS_TOKEN_SECRET } from "../config/env.js";
 
 import crypto from "crypto";
 
@@ -22,7 +22,7 @@ const userSchema = new mongoose.Schema(
       type: String,
     },
     address: {
-         type:String
+      type: String
     },
     countryID: {
       type: mongoose.Schema.Types.ObjectId,
@@ -31,6 +31,7 @@ const userSchema = new mongoose.Schema(
     accountType: {
       type: Number,
       required: true,
+      default: 2
     },
     balance: {
       type: Number,
@@ -85,12 +86,12 @@ userSchema.methods.generateAccessToken = function () {
 userSchema.methods.generateHashedPassword = function () {
   const unHashedPassword = crypto.randomBytes(5).toString("hex");
 
-  
+
   const hashedPassword = crypto
     .createHash("sha256")
     .update(unHashedPassword)
     .digest("hex");
-  return {  hashedPassword };
+  return { hashedPassword };
 };
 
 

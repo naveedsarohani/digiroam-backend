@@ -82,3 +82,12 @@ export {
   TWILIO_WHATSAPP_NUMBER,
   ACCESS_CODE,
 };
+
+
+// managed by Naveed Sarohani (naveed.sarohani@gmail.com)
+export const mail = {
+  host: process.env.MAIL_HOST,
+  port: process.env.MAIL_PORT,
+  user: process.env.MAIL_USER,
+  pass: process.env.MAIL_PASS,
+}

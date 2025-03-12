@@ -12,6 +12,7 @@ import rateLimit from "express-rate-limit";
 
 // Routes imports
 import { router } from "./routes/index.js";
+import response from "./middeware/response.js";
 
 // Controllers imports
 import {
@@ -44,12 +45,13 @@ app.use(helmet()); // Security middleware
 app.use(compression()); // Gzip compression
 app.use(morgan("dev")); // Logging middleware
 app.use(cookieParser()); // Cookie parsing middleware
+app.use(response); // middleware to handle api response
 
 // CORS configuration
 app.use(
   cors({
     origin: ["http://localhost:5173", ORIGIN],
-    credentials: true, // Allow cookies & authentication headers
+    credentials: true,
   })
 );
 
@@ -60,7 +62,7 @@ const limiter = rateLimit({
   max: 80, // Limit each IP to 100 requests per `window`
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-  message: "Too many requests, please try again later.",
+  message: "Too many requests, Please try again later.",
 });
 
 // Apply the rate limiter to all requests

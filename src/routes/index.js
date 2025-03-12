@@ -9,6 +9,8 @@ import { eSimRoute } from "./eSim.routes.js";
 import { payment } from "./payment.route.js";
 import { cartRoute } from "./userCart.routes.js";
 import { paymentSaveRoute } from "./paymentSave.route.js";
+import emailTemplateRoutes from "./email.template.routes.js";
+import emailRoutes from "./email.routes.js";
 
 const router = Router();
 
@@ -20,6 +22,8 @@ router.use("/otp-verification", otpVerificationRoute);
 router.use("/eSim", eSimRoute);
 router.use("/payment", payment);
 router.use("/cart", cartRoute);
-router.use("/paymentSave",paymentSaveRoute)
+router.use("/paymentSave", paymentSaveRoute)
+router.use("/email", emailRoutes)
+router.use("/email-templates", emailTemplateRoutes)
 
 export { router };

@@ -28,7 +28,7 @@ import {
 
 const eSimRoute = Router();
 
-eSimRoute.route("/getPackages").post(validate(dataPackagesSchema),getDataPackages);
+eSimRoute.route("/getPackages").post(validate(dataPackagesSchema), getDataPackages);
 eSimRoute.route("/getBalance").post(getBalance);
 eSimRoute.route("/orderProfiles").post(validate(orderProfileSchema), orderProfiles);
 eSimRoute.route("/allocatedProfiles").post(validate(allocatedProfileSchema), allocatedProfiles);

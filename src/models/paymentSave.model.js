@@ -9,7 +9,7 @@ const paymentSchema = new mongoose.Schema({
   transactionId: {
     type: String,
     required: true,
-    unique: true, // Ensures no duplicate transactions are stored
+    unique: true,
   },
   amount: {
     type: Number,
@@ -18,12 +18,12 @@ const paymentSchema = new mongoose.Schema({
   currency: {
     type: String,
     required: true,
-    default: "USD", // Default currency if not provided
+    default: "USD",
   },
   status: {
     type: String,
     required: true,
-    enum: ["PENDING", "COMPLETED", "FAILED","CANCELLED","DELETED"], // Possible statuses
+    enum: ["PENDING", "COMPLETED", "FAILED", "CANCELLED", "DELETED"],
     default: "COMPLETED",
   },
   payer: {
@@ -45,7 +45,7 @@ const paymentSchema = new mongoose.Schema({
     },
   ],
   orderNo: {
-    type: String, // eSIM Order Number
+    type: String,
   },
   createdAt: {
     type: Date,

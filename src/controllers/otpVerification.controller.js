@@ -1,8 +1,5 @@
-import { OtpVerification } from "../models/otpVerification.model.js";
 import { generateAndSaveOtp } from "../utils/generateOtp.js";
-import { ApiError } from "../utils/ApiError.js";
 import { transporter } from "../utils/sendMail.js";
-import { User } from "../models/user.model.js";
 import { SENDER_EMAIL } from "../config/env.js";
 
 const againSendOtp = async (req, res, next) => {

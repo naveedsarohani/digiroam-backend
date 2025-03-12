@@ -142,7 +142,7 @@ const stripePaymentIntent = async (req, res) => {
   try {
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(amount * 100), // Convert to smallest currency unit
-      currency: currency || "usd",
+      currency: currency ?? "usd",
       metadata: {
         items: JSON.stringify(items), // Store items as a stringified JSON object
       },
