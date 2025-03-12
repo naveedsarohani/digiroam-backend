@@ -14,4 +14,8 @@ authorizationRoutes.post("/register-admin",
     validate(authorizationSchema.admin.register), authorizationController.admin.register
 );
 
+authorizationRoutes.delete("/delete-admin/:id",
+    validate(authorizationSchema.admin.register), authorizationController.admin.delete
+);
+
 export default authorizationRoutes;

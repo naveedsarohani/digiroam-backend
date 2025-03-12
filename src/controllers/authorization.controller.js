@@ -23,5 +23,16 @@ const register = async (req, res) => {
         return res.response(400, "Failed to register an admin account", { error: error.message });
     }
 }
+const del = async (req, res) => {
+    try {
+        const existingUser = await User.findById(req.params.id);
+        if (!existingUser) return res.response(404, "User not found");
 
-export default { admin: { index, register } }
+        const admin = await User.findByIdAndDelete(req.params.id);
+        return res.response(200, "User account deleted successfully.", { admin });
+    } catch (error) {
+        return res.response(400, "Failed to delete user account", { error: error.message });
+    }
+}
+
+export default { admin: { index, register, delete: del } }
