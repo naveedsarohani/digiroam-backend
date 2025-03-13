@@ -3,6 +3,7 @@ import paymentService from "../services/payment.service.js";
 import filterRequestBody from "../../utils/helpers/filter.request.body.js";
 import Cart from "../models/cart.model.js";
 import email from "../../utils/helpers/email.js";
+import axiosInstance from "../../utils/helpers/axios.instance.js";
 
 const store = async (req, res) => {
     try {
@@ -43,7 +44,7 @@ const webHook = async (req, res) => {
 
         switch (notifyType) {
             case "ORDER_STATUS":
-                await sendOrderEmail(content, req, res);
+                await sendOrderEmail(content);
                 break;
 
             case "ESIM_STATUS":
@@ -69,7 +70,7 @@ const webHook = async (req, res) => {
                 break;
         }
 
-        await payment.save();
+        await paymentService.update(payment._id, { status: payment.status });
 
         res.status(200).json({ success: true });
     } catch (error) {
@@ -79,13 +80,29 @@ const webHook = async (req, res) => {
 
 }
 
-const sendOrderEmail = async (content, req, res) => {
+const sendOrderEmail = async (content) => {
     const { orderNo, transactionId, orderStatus } = content;
+    const payment = await paymentService.retrieveOne({ transactionId });
+    if (!payment) { return }
+    const user = payment.userId
 
-    
-    const payment =
+    const profiles = await axiosInstance.get("/esim/query");
+    if (profiles.data?.success === false) { return }
+    const data = profiles.data.obj;
 
-        email.send()
+    const emailOptions = {
+        subject: `Your Travel eSIM is Ready! Order Confirmation ${orderNo}`,
+        customerName: user.name,
+        planName: data.esimList[0].packageList[0].packageName,
+        country: data.esimList[0].packageList[0].locationCode,
+        days: data.esimList[0].totalDuration,
+        dataLimit: (data.esimList[0].totalVolume / 1024) / 1024,
+        supportEmail: "support@roamdigi.com",
+        activationGuideLink: "https://roamdigi.com/faq",
+        template: "order.confirm"
+    }
+
+    await email.send(user.email, emailOptions)
 }
 
 export default { store, payments, webHook }

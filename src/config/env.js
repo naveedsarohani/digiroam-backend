@@ -102,3 +102,8 @@ export const mail = {
   user: process.env.MAIL_USER,
   pass: process.env.MAIL_PASS,
 }
+
+export const esim = {
+  baseUrl: process.env.ESIM_BASE_URL,
+  accessCode: process.env.ESIM_ACCESS_CODE,
+}

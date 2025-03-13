@@ -1,17 +1,16 @@
 import axios from "axios";
-import { ACCESS_CODE, ESIM_BASE_URL } from "../../config/env.js";
+import { esim } from "../../config/env.js";
 
 const axiosInstance = axios.create({
-    baseURL: ESIM_BASE_URL,
+    baseURL: esim.baseUrl,
     headers: {
         "Content-Type": "application/json",
     },
 });
 
-// Add a request interceptor
 axiosInstance.interceptors.request.use(
     (config) => {
-        config.headers['RT-AccessCode'] = ACCESS_CODE;
+        config.headers['RT-AccessCode'] = esim.accessCode;
         return config;
     },
     (error) => {

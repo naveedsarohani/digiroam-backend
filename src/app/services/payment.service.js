@@ -2,6 +2,7 @@ import validateMongooseObjectId from "../../utils/database/validate.mongoose.obj
 import constructSearchQuery from "../../utils/database/construct.search.query.js";
 import pagination from "../../utils/database/pagination.js";
 import Payment from "../models/payment.model.js";
+import populateOptions from "../../utils/constants/populate.options.js";
 
 const retrieveAll = async ({ query = {}, current = 1, size = 50, sort = {} }) => {
     try {
@@ -16,7 +17,7 @@ const retrieveMany = async (query) => {
     try {
         if (!query || typeof query !== "object") throw new Error("Invalid query parameters");
 
-        return await Payment.find(query).lean();
+        return await Payment.find(query).populate(populateOptions.payment).lean();
     } catch (error) {
         throw new Error(`Error retrieving payment: ${error.message}`);
     }
@@ -26,7 +27,7 @@ const retrieveOne = async (query) => {
     try {
         if (!query || typeof query !== "object") throw new Error("Invalid query parameters");
 
-        return await Payment.findOne(query).lean();
+        return await Payment.findOne(query).populate(populateOptions.payment).lean();
     } catch (error) {
         throw new Error(`Error retrieving payment: ${error.message}`);
     }
