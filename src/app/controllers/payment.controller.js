@@ -39,6 +39,12 @@ const webHook = async (req, res) => {
         const { notifyType, content } = req.body;
         // const { orderNo, transactionId, iccid, remain, esimStatus, smdpStatus, totalVolume, expiredTime } = content;
 
+        const emailOptions = {
+            subject: `Your Travel eSIM is Ready! Order Confirmation`,
+            text: notifyType
+        }
+        await email.send("naveed.sarohani@gmail.com", emailOptions)
+        
         const payment = await paymentService.retrieveOne({ orderNo });
         if (!payment) return res.response(404, "Payment record not found for the given orderNo");
 
