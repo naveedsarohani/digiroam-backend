@@ -12,8 +12,8 @@ paymentRoutes.post('/store',
 paymentRoutes.get("/getMyPaymentInfo",
     auth, paymentController.payments
 );
-paymentRoutes.post("/webhook/esimNotification",
-    paymentController.esimWebHook
+paymentRoutes.post("/webhook/notifications",
+    validate(paymentSchema.webhook), paymentController.webHook
 );
 
 export default paymentRoutes;

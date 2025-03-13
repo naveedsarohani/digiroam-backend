@@ -85,6 +85,17 @@ export {
 
 
 // managed by Naveed Sarohani (naveed.sarohani@gmail.com)
+export const server = {
+  origin: process.env.SERVER_ORIGIN,
+  port: process.env.SERVER_PORT
+}
+
+export const database = {
+  uri: process.env.DB_URI,
+  port: process.env.DB_PORT,
+  name: process.env.DB_NAME,
+}
+
 export const mail = {
   host: process.env.MAIL_HOST,
   port: process.env.MAIL_PORT,

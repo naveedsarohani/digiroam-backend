@@ -26,10 +26,7 @@ const retrieveOne = async (query) => {
     try {
         if (!query || typeof query !== "object") throw new Error("Invalid query parameters");
 
-        const payment = await Payment.findOne(query).lean();
-        if (!payment) throw new Error("payment not found");
-
-        return payment;
+        return await Payment.findOne(query).lean();
     } catch (error) {
         throw new Error(`Error retrieving payment: ${error.message}`);
     }

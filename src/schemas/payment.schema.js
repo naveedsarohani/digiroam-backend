@@ -11,13 +11,22 @@ const store = Joi.object({
     amount: Joi.number().required().messages({
         "any.required": "amount is required",
     }),
-    packageInfoList: Joi.string().required().messages({
+    packageInfoList: Joi.array().required().messages({
         "any.required": "package info list is required",
     }),
 
     // optional fields
-    currency: Joi.string().optional(),
-    payer: Joi.string().optional(),
+    currency: Joi.optional(),
+    payer: Joi.optional(),
 });
 
-export default { store };
+const webhook = Joi.object({
+    notifyType: Joi.string().required().messages({
+        "any.required": "notify type no is required",
+    }),
+    content: Joi.string().required().messages({
+        "any.required": "content is required",
+    }),
+});
+
+export default { store, webhook };

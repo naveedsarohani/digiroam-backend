@@ -32,28 +32,17 @@ const payments = async (req, res) => {
     }
 }
 
-const esimWebHook = async (req, res) => {
+const webHook = async (req, res) => {
     try {
         const { notifyType, content } = req.body;
-
-        if (!notifyType || !content) {
-            return res.status(400).json({ error: "Invalid webhook payload" });
-        }
-
         const { orderNo, transactionId, iccid, remain, esimStatus, smdpStatus, totalVolume, expiredTime } = content;
 
-
-        const payment = await Payment.findOne({ orderNo });
-
-        if (!payment) {
-            return res.status(404).json({ error: "Payment record not found for the given orderNo" });
-        }
-
+        const payment = await paymentService.retrieveOne({ orderNo });
+        if (!payment) return res.response(404, "Payment record not found for the given orderNo");
 
         switch (notifyType) {
             case "ORDER_STATUS":
-                // Example: You might want to log the order status or update a field in the payment record
-                console.log(`Order ${orderNo} status: ${content.orderStatus}`);
+                
                 break;
 
             case "ESIM_STATUS":
@@ -89,4 +78,4 @@ const esimWebHook = async (req, res) => {
 
 }
 
-export default { store, payments, esimWebHook }
+export default { store, payments, webHook }
