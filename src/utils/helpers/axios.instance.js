@@ -1,5 +1,5 @@
 import axios from "axios";
-import { ACCESS_CODE, ESIM_BASE_URL } from "../config/env.js";
+import { ACCESS_CODE, ESIM_BASE_URL } from "../../config/env.js";
 
 const axiosInstance = axios.create({
     baseURL: ESIM_BASE_URL,

@@ -2,6 +2,7 @@ import Payment from "../models/payment.model.js";
 import paymentService from "../services/payment.service.js";
 import filterRequestBody from "../../utils/helpers/filter.request.body.js";
 import Cart from "../models/cart.model.js";
+import email from "../../utils/helpers/email.js";
 
 const store = async (req, res) => {
     try {
@@ -35,14 +36,14 @@ const payments = async (req, res) => {
 const webHook = async (req, res) => {
     try {
         const { notifyType, content } = req.body;
-        const { orderNo, transactionId, iccid, remain, esimStatus, smdpStatus, totalVolume, expiredTime } = content;
+        // const { orderNo, transactionId, iccid, remain, esimStatus, smdpStatus, totalVolume, expiredTime } = content;
 
         const payment = await paymentService.retrieveOne({ orderNo });
         if (!payment) return res.response(404, "Payment record not found for the given orderNo");
 
         switch (notifyType) {
             case "ORDER_STATUS":
-                
+                await sendOrderEmail(content, req, res);
                 break;
 
             case "ESIM_STATUS":
@@ -76,6 +77,15 @@ const webHook = async (req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 
+}
+
+const sendOrderEmail = async (content, req, res) => {
+    const { orderNo, transactionId, orderStatus } = content;
+
+    
+    const payment =
+
+        email.send()
 }
 
 export default { store, payments, webHook }

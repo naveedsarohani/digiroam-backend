@@ -4,7 +4,7 @@ import EmailTemplate from "../models/email.template.model.js";
 import pagination from "../../utils/database/pagination.js";
 import file from "../middlewares/file.js";
 
-const retrieveAll = async ({ query = {}, current = 1, size = 10, sort = {} }) => {
+const retrieveAll = async ({ query = {}, current = 1, size = 50, sort = {} }) => {
     try {
         const searchQuery = constructSearchQuery(query, true);
         return await pagination(EmailTemplate, { query: searchQuery, current, size, sort });

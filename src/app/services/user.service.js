@@ -3,7 +3,7 @@ import constructSearchQuery from "../../utils/database/construct.search.query.js
 import pagination from "../../utils/database/pagination.js";
 import { User } from "../../models/user.model.js";
 
-const retrieveAll = async ({ query = {}, current = 1, size = 10, sort = {} }) => {
+const retrieveAll = async ({ query = {}, current = 1, size = 50, sort = {} }) => {
     try {
         const searchQuery = constructSearchQuery(query, true);
         return await pagination(User, { query: searchQuery, current, size, sort }, { select: ["-password"] });

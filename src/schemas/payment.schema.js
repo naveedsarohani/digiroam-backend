@@ -24,7 +24,7 @@ const webhook = Joi.object({
     notifyType: Joi.string().required().messages({
         "any.required": "notify type no is required",
     }),
-    content: Joi.string().required().messages({
+    content: Joi.required().messages({
         "any.required": "content is required",
     }),
 });

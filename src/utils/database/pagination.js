@@ -1,7 +1,7 @@
-const pagination = async (model, { query = {}, current = 1, size = 10, sort = {} }, { select = null } = {}) => {
+const pagination = async (model, { query = {}, current = 1, size = 50, sort = {} }, { select = null } = {}) => {
     try {
         current = Math.max(1, parseInt(current, 10) ?? 1);
-        size = Math.max(1, parseInt(size, 10) ?? 10);
+        size = Math.max(1, parseInt(size, 10) ?? 50);
 
         const [documentsCount, data] = await Promise.all([
             model.countDocuments(query),
