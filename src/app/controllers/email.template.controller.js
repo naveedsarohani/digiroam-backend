@@ -1,6 +1,6 @@
 import emailService from "../services/email.template.service.js";
-import validateMongooseObjectId from "../utils/database/validate.mongoose.object.id.js";
-import filterRequestBody from "../utils/helpers/filter.request.body.js";
+import validateMongooseObjectId from "../../utils/database/validate.mongoose.object.id.js";
+import filterRequestBody from "../../utils/helpers/filter.request.body.js";
 
 const index = async (req, res) => {
     try {
@@ -17,6 +17,7 @@ const show = async (req, res) => {
         validateMongooseObjectId(emailTemplateId);
 
         const emailTemplate = await emailService.retrieveOne({ _id: emailTemplateId });
+        if (!emailTemplate) return res.response(404, "The email template not found");
 
         return res.response(200, "Email template retrieved successfully", { emailTemplate });
     } catch (error) {

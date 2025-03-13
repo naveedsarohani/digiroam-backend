@@ -6,8 +6,6 @@ import { ApiResponse } from "../utils/ApiResonse.js";
 import { dataPackagesResponse } from "../middeware/transformation/responseTransformation.js";
 import { ACCESS_CODE, GET_DATA_PACKAGES_URL } from "../config/env.js";
 
-
-
 const getDataPackagesList = async (req, res, next) => {
   try {
     const headers = {
@@ -16,7 +14,7 @@ const getDataPackagesList = async (req, res, next) => {
     };
 
     const body = req.body;
-   console.log("This is req.body "+req.body)
+    console.log("This is req.body " + req.body)
     const dataPackages = await axios.post(
       GET_DATA_PACKAGES_URL,
       body,

@@ -1,6 +1,6 @@
 import axios from "axios";
 import Stripe from "stripe";
-import { Cart } from "../models/cart.model.js"
+import Cart from "../app/models/cart.model.js"
 import { PAYPAL_API_BASE, PAYPAL_CLIENT_KEY, PAYPAL_SECRET_KEY, STRIPE_SECRET_KEY } from "../config/env.js";
 import { ApiError } from "../utils/ApiError.js";
 // PayPal API base URL
@@ -32,7 +32,6 @@ const getAccessToken = async () => {
     );
   }
 };
-
 
 const paypalGenerateOrderId = async (req, res, next) => {
   const { amount, currency } = req.body;

@@ -1,67 +1,34 @@
-import { Payment } from "../models/paymentSave.model.js";
-import { Cart } from "../models/cart.model.js";
-import { ApiError } from "../utils/ApiError.js";
+import Payment from "../models/payment.model.js";
+import paymentService from "../services/payment.service.js";
+import filterRequestBody from "../../utils/helpers/filter.request.body.js";
+import Cart from "../models/cart.model.js";
 
-const paymentStore = async (req, res, next) => {
-    const {
-        transactionId,
-        amount,
-        currency,
-        payer,
-        packageInfoList,
-        orderNo
-    } = req.body;
-
-
-    if (!transactionId || !amount || !packageInfoList || !orderNo) {
-        throw new ApiError(400, "All Fields are require.");
-    }
-
+const store = async (req, res) => {
     try {
-        // Check if the payment already exists
-        const existingPayment = await Payment.findOne({ transactionId });
-        if (existingPayment) {
-            throw new ApiError(409, "Payment with this transaction ID already exists.");
+        const data = filterRequestBody(req.body,
+            ["transactionId", "amount", "currency", "payer", "packageInfoList", "orderNo"]
+        );
+
+        if ((await paymentService.retrieveOne({ transactionId: data.transactionId }))) {
+            return res.response(409, "Payment with this transaction ID already exists");
         }
 
-        // Save the payment to the database
-        const payment = await Payment.create({
-            userId: req.user._id,
-            transactionId,
-            amount,
-            currency: currency ?? "USD",
-            status: "COMPLETED",
-            payer,
-            packageInfoList,
-            orderNo,
-        });
+        const payment = await paymentService.create({ userId: req.user._id, ...data });
+        if (!payment) return res.response(400, "Failed to save payment details");
 
-        // Clear the user's cart
         await Cart.findOneAndDelete({ userId: req.user._id });
-
-        res.status(201).json({
-            success: true,
-            message: "Payment stored successfully, and cart cleared.",
-            payment,
-        });
-
+        return res.response(201, "Payment stored successfully, and cart cleared");
     } catch (error) {
-        next(error);
+        return res.response(500, "Internal server error", { error: error.message });
     }
-
 }
 
-const getMyPaymentsInfo = async (req, res, next) => {
+const payments = async (req, res) => {
     try {
-        const myPayments = await Payment.find({ userId: req.user._id })
-
-        res.status(200).json({
-            success: true,
-            message: "successfully get all payments info",
-            myPayments,
-        });
+        const myPayments = await paymentService.retrieveMany({ userId: req.user._id });
+        return res.response(200, "Retrieved all your payments", { myPayments });
     } catch (error) {
-        next(new ApiError(400, "Error occur while getting payment ", error.message))
+        return res.response(400, "Failed to retrieve your payments", { error: error.message });
     }
 }
 
@@ -122,4 +89,4 @@ const esimWebHook = async (req, res) => {
 
 }
 
-export { paymentStore, getMyPaymentsInfo, esimWebHook }
+export default { store, payments, esimWebHook }

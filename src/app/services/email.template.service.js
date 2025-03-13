@@ -1,8 +1,8 @@
+import validateMongooseObjectId from "../../utils/database/validate.mongoose.object.id.js";
+import constructSearchQuery from "../../utils/database/construct.search.query.js";
 import EmailTemplate from "../models/email.template.model.js";
-import pagination from "../utils/database/pagination.js";
-import constructSearchQuery from "../utils/database/construct.search.query.js";
-import file from "../middeware/file.js";
-import validateMongooseObjectId from "../utils/database/validate.mongoose.object.id.js";
+import pagination from "../../utils/database/pagination.js";
+import file from "../middlewares/file.js";
 
 const retrieveAll = async ({ query = {}, current = 1, size = 10, sort = {} }) => {
     try {
@@ -16,11 +16,7 @@ const retrieveAll = async ({ query = {}, current = 1, size = 10, sort = {} }) =>
 const retrieveOne = async (query) => {
     try {
         if (!query || typeof query !== "object") throw new Error("Invalid query parameters");
-
-        const template = await EmailTemplate.findOne(query).lean();
-        if (!template) throw new Error("Email template not found");
-
-        return template;
+        return await EmailTemplate.findOne(query).lean();
     } catch (error) {
         throw new Error(`Error retrieving email template: ${error.message}`);
     }

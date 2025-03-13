@@ -1,8 +1,9 @@
 import { Router } from "express";
 import { auth } from "../middeware/auth.js";
 import { validate } from "../middeware/validation.js";
-import emailSchema from "../validators/email.schema.js";
-import emailController from "../controllers/email.controller.js";
+
+import emailSchema from "../schemas/email.schema.js";
+import emailController from "../app/controllers/email.controller.js";
 
 const emailRoutes = Router({ mergeParams: true });
 

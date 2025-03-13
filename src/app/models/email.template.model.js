@@ -8,7 +8,6 @@ const EmailSchema = new mongoose.Schema(
             enum: [
                 "ON_PURCHASE",
                 "ON_CANCEL",
-                "ON_",
             ],
         },
         subject: {

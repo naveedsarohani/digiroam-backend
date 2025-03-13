@@ -1,6 +1,6 @@
 import emailService from "../services/email.template.service.js";
-import { User } from "../models/user.model.js";
-import email from "../utils/helpers/email.js";
+import { User } from "../../models/user.model.js";
+import email from "../../utils/helpers/email.js";
 import path from "path";
 
 const send = async (req, res) => {
@@ -29,9 +29,9 @@ const send = async (req, res) => {
             res.response(500, "Failed to send email. Please try again");
         }
 
-        res.response(200, `The email was send successfully`);
+        res.response(200, `The email was sent successfully`);
     } catch (error) {
-        res.response(500, error.message ?? "Something went wrong", { error })
+        res.response(500, "internal server error", { error: error.message })
     }
 };
 

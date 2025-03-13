@@ -4,7 +4,7 @@ import { ApiResponse } from "../utils/ApiResonse.js";
 import { generateAndSaveOtp } from "../utils/generateOtp.js";
 import { configDotenv } from "dotenv";
 import { transporter } from "../utils/sendMail.js";
-import { TWILIO_ID ,TWILIO_TOKEN,TWILIO_WHATSAPP_NUMBER,SENDER_EMAIL} from "../config/env.js";
+import { TWILIO_ID, TWILIO_TOKEN, TWILIO_WHATSAPP_NUMBER, SENDER_EMAIL } from "../config/env.js";
 import { OtpVerification } from "../models/otpVerification.model.js";
 import Twilio from "twilio";
 configDotenv();
@@ -19,7 +19,7 @@ const generateOTP = () => Math.floor(100000 + Math.random() * 900000);
 const sendWhatsAppOtp = async (req, res, next) => {
   const { phone } = req.body;
   const otp = generateOTP();
-  otps[phone] = otp; 
+  otps[phone] = otp;
 
   try {
     await twilio_client.messages.create({

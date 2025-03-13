@@ -1,9 +1,10 @@
 import { Router } from "express";
 import { auth } from "../middeware/auth.js";
-import emailTemplateController from "../controllers/email.template.controller.js";
 import { validate } from "../middeware/validation.js";
-import emailTemplateSchema from "../validators/email.template.schema.js";
-import file from "../middeware/file.js";
+
+import emailTemplateController from "../app/controllers/email.template.controller.js";
+import emailTemplateSchema from "../schemas/email.template.schema.js";
+import file from "../app/middlewares/file.js";
 
 const emailTemplateRoutes = Router({ mergeParams: true });
 

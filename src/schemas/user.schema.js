@@ -1,6 +1,6 @@
 import Joi from "joi";
 
-const register = Joi.object({
+const create = Joi.object({
     name: Joi.string().required().messages({
         "any.required": "event name is required",
     }),
@@ -13,4 +13,4 @@ const register = Joi.object({
     }),
 });
 
-export default { admin: { register } };
+export default { create };

@@ -10,9 +10,15 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const upload = multer({
     storage: multer.diskStorage({
         destination: function (req, file, cb) {
-            const uploadPath = path.join(__dirname, '../../public/uploads');
-            cb(null, uploadPath);
+            const uploadPath = path.join(__dirname, '../../../public/uploads');
+            fs.mkdir(uploadPath, { recursive: true }, (err) => {
+                if (err) {
+                    return cb(err, null);
+                }
+                cb(null, uploadPath);
+            });
         },
+
         filename: function (req, file, cb) {
             crypto.randomBytes(18, (error, buffer) => {
                 cb(null, buffer.toString('hex') + path.extname(file.originalname));
@@ -50,13 +56,11 @@ const save = (fieldsOrField, count = 1) => (req, res, next) => {
 };
 
 const del = (filename) => {
-    const filepath = path.join(__dirname, "../../public/uploads/", filename);
+    const filepath = path.join(__dirname, "../../../public/uploads/", filename);
     if (fs.existsSync(filepath)) {
-        try {
-            fs.unlinkSync(filepath);
-        } catch (error) {
-            console.error(`Error deleting file: ${filename}`, error);
-        }
+        fs.unlink(filepath, (error) => {
+            if (error) throw error;
+        });
     }
 };
 

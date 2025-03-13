@@ -12,7 +12,7 @@ import rateLimit from "express-rate-limit";
 
 // Routes imports
 import { router } from "./routes/index.js";
-import response from "./middeware/response.js";
+import response from "./app/middlewares/response.js";
 
 // Controllers imports
 import {

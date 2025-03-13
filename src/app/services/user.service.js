@@ -1,13 +1,12 @@
-import { User } from "../models/user.model.js";
-import pagination from "../utils/database/pagination.js";
-import constructSearchQuery from "../utils/database/construct.search.query.js";
-import file from "../middeware/file.js";
-import validateMongooseObjectId from "../utils/database/validate.mongoose.object.id.js";
+import validateMongooseObjectId from "../../utils/database/validate.mongoose.object.id.js";
+import constructSearchQuery from "../../utils/database/construct.search.query.js";
+import pagination from "../../utils/database/pagination.js";
+import { User } from "../../models/user.model.js";
 
 const retrieveAll = async ({ query = {}, current = 1, size = 10, sort = {} }) => {
     try {
         const searchQuery = constructSearchQuery(query, true);
-        return await pagination(User, { query: searchQuery, current, size, sort });
+        return await pagination(User, { query: searchQuery, current, size, sort }, { select: ["-password"] });
     } catch (error) {
         throw new Error("Failed to retrieve Users. Please try again.");
     }
@@ -17,10 +16,7 @@ const retrieveOne = async (query) => {
     try {
         if (!query || typeof query !== "object") throw new Error("Invalid query parameters");
 
-        const user = await User.findOne(query).select("-password").lean();
-        if (!user) throw new Error("User not found");
-
-        return user;
+        return await User.findOne(query).select("-password -__v").lean();
     } catch (error) {
         throw new Error(`Error retrieving User: ${error.message}`);
     }
@@ -39,7 +35,7 @@ const update = async (id, data) => {
     try {
         validateMongooseObjectId(id);
 
-        const user = await User.findByIdAndUpdate(id, data, { new: true });
+        const user = await User.findByIdAndUpdate(id, data, { new: true }).select("-password -__v");
         if (!user) throw new Error("Failed to update User");
 
         return user;
@@ -52,8 +48,8 @@ const del = async (id) => {
     try {
         validateMongooseObjectId(id);
 
-        const user = await User.findByIdAndDelete(id);
-        if (!user) throw new Error("Failed to delete User");
+        const user = await User.findByIdAndDelete(id).select();
+        if (!user) throw new Error("User account not found");
 
         return user;
     } catch (error) {
