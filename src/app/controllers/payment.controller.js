@@ -1,8 +1,7 @@
 import paymentService from "../services/payment.service.js";
 import filterRequestBody from "../../utils/helpers/filter.request.body.js";
 import Cart from "../models/cart.model.js";
-import email from "../../utils/helpers/email.js";
-import axiosInstance from "../../utils/helpers/axios.instance.js";
+import { sendOrderEmail, sendCencelEmail } from "../../utils/helpers/email.on.event.js";
 
 const store = async (req, res) => {
     try {
@@ -45,16 +44,12 @@ const webHook = async (req, res) => {
 
         switch (notifyType) {
             case "ORDER_STATUS":
-                // const emailOptions = {
-                //     subject: `New Order Placed`,
-                //     text: "ORDER_NO: " + orderNo
-                // }
-                // await email.send("naveed.sarohani@gmail.com", emailOptions)
+                // await sendOrderEmail(orderNo, { name: "Naveed Sarohani", email: "naveed.sarohani@gmail.com" })
                 break;
 
             case "ESIM_STATUS":
                 if (esimStatus === "CANCEL" || smdpStatus === "RELEASED") {
-                    await sendCencelEmail(orderNo, payment.userId);
+                    await sendCencelEmail(iccid, payment.userId);
                     payment.status = "CANCELLED";
                 } else if (esimStatus === "IN_USE") {
                     payment.status = "COMPLETED";
@@ -84,63 +79,6 @@ const webHook = async (req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 
-}
-
-const sendOrderEmail = async (orderNo, user,) => {
-    try {
-        const profiles = await axiosInstance({
-            method: "POST", url: "/esim/query", data: {
-                orderNo, pager: { pageNum: 1, pageSize: 20 }
-            }
-        });
-
-        if (profiles.data?.success === false) return;
-        const data = profiles.data.obj.esimList;
-
-        const emailOptions = {
-            subject: `Your Travel eSIM is Ready! Order Confirmation ${orderNo}`,
-            customerName: user.name,
-            planName: data[0].packageList[0].packageName,
-            country: data[0].packageList[0].locationCode,
-            days: data[0].totalDuration,
-            dataLimit: ((data[0].totalVolume / 1024) / 1024) / 1024,
-            supportEmail: "support@roamdigi.com",
-            activationGuideLink: "https://roamdigi.com/faqs",
-            template: "order.confirm"
-        }
-
-        await email.send(user.email, emailOptions);
-    } catch (error) {
-        throw error;
-    }
-}
-
-const sendCencelEmail = async (orderNo, user) => {
-    try {
-        const profiles = await axiosInstance({
-            method: "POST", url: "/esim/query", data: {
-                orderNo, pager: { pageNum: 1, pageSize: 20 }
-            }
-        });
-
-        if (profiles.data?.success === false) return;
-        const data = profiles.data.obj.esimList;
-
-        const emailOptions = {
-            subject: `Your Travel eSIM Order ${orderNo} Has Been Canceled`,
-            customerName: user.name,
-            planName: data[0].packageList[0].packageName,
-            country: data[0].packageList[0].locationCode,
-            days: data[0].totalDuration,
-            dataLimit: ((data[0].totalVolume / 1024) / 1024) / 1024,
-            supportEmail: "support@roamdigi.com",
-            template: "order.cancel"
-        }
-
-        await email.send(user.email, emailOptions);
-    } catch (error) {
-        throw error;
-    }
 }
 
 export default { store, payments, webHook }

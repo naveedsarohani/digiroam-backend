@@ -16,7 +16,7 @@ const send = async (req, res) => {
         })) ?? [];
 
         template.body = template.body
-            .replace(/{Customer_Name}/g, user.name.capEach() ?? "Dear Customer");
+            .replace(/{Customer_Name}/g, user.name ?? "Dear Customer");
 
         const emailOptions = {
             subject: template.subject,

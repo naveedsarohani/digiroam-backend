@@ -1,13 +1,20 @@
 <p>Hi <%= customerName %>,</p>
+
 <p>Thank you for choosing RoamDigi! Your travel eSIM is ready for activation.</p>
 <ul>
-  <li>Plan: <%= planName %>
-  </li>
-  <li>Destination: <%= country %>
-  </li>
+  <li>Plan: <%= planName %></li>
+  <li>Destination: <%= country %> </li>
   <li>Validity: <%= days %> Days</li>
   <li>Data Allowance: <%= dataLimit %> GBs</li>
 </ul>
+
+<p>How to Activate Your eSIM:</p>
+<ol>
+  <li>Scan the attached QR code or manually enter the eSIM details.</li>
+  <li>Ensure mobile data and roaming are enabled.</li>
+  <li>Restart your phone after installation.</li>
+</ol>
+
 <p><a href="<%= activationGuideLink %>">View Activation Guide</a></p>
 <p>Need help? Contact our support team at <%= supportEmail %>.</p>
 

@@ -7,6 +7,7 @@ import { transporter } from "../utils/sendMail.js";
 import { TWILIO_ID, TWILIO_TOKEN, TWILIO_WHATSAPP_NUMBER, SENDER_EMAIL } from "../config/env.js";
 import { OtpVerification } from "../models/otpVerification.model.js";
 import Twilio from "twilio";
+import { sendPasswordChangeEmail } from "../utils/helpers/email.on.event.js";
 configDotenv();
 
 
@@ -296,9 +297,8 @@ const changeCurrentPassword = async (req, res, next) => {
     user.password = newPassword;
     await user.save({ validateBeforeSave: false });
 
-    return res
-      .status(200)
-      .json(new ApiResponse(200, {}, "Password changed successfully"));
+    res.status(200).json(new ApiResponse(200, {}, "Password changed successfully"));
+    await sendPasswordChangeEmail(user);
   } catch (error) {
     next(error);
   }

@@ -1,6 +1,19 @@
 import Joi from "joi";
 
-const eventNames = ["ON_PURCHASE", "ON_CANCEL"];
+const eventNames = [
+    "ON_PURCHASE",
+    "ON_CANCEL",
+    "ON_ONE_DAY_LEFT",
+    "ON_USED_80",
+    "ON_OFF_20",
+    "ON_OFF_50",
+    "ON_OFF_80",
+    "ON_TOP_UP",
+    "ON_EXPIRED",
+    "ON_PASSWORD_CHANGE",
+    "ON_LOGIN",
+    "ON_DISCOUNT"
+]
 
 const create = Joi.object({
     eventName: Joi.string()
@@ -41,7 +54,7 @@ const update = Joi.object({
         "string.max": "subject must not exceed 255 characters",
     }),
 
-    body: Joi.string().min(5).optional().messages({
+    body: Joi.min(5).optional().messages({
         "string.empty": "body cannot be empty",
         "string.min": "body must be at least 5 characters long",
     }),
