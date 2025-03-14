@@ -297,7 +297,6 @@ const changeCurrentPassword = async (req, res, next) => {
     user.password = newPassword;
     await user.save({ validateBeforeSave: false });
 
-    await sendPasswordChangeEmail(user);
     return res.status(200).json(new ApiResponse(200, {}, "Password changed successfully"));
   } catch (error) {
     next(error);
@@ -379,10 +378,11 @@ const forgotPasswordOtpVerification = async (req, res, next) => {
 
     const mailSend = await transporter.sendMail(mailOptions);
 
+    await sendPasswordChangeEmail(user);
     return res
       .status(200)
       .json(
-        new ApiResponse(200, {}, "Your Password successfully Sent to  Email")
+        new ApiResponse(200, {}, "Your Password successfully Sent to Email")
       );
   } catch (error) {
     next(error);
