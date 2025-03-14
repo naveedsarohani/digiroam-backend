@@ -54,7 +54,7 @@ const update = Joi.object({
         "string.max": "subject must not exceed 255 characters",
     }),
 
-    body: Joi.min(5).optional().messages({
+    body: Joi.string().min(5).optional().messages({
         "string.empty": "body cannot be empty",
         "string.min": "body must be at least 5 characters long",
     }),
