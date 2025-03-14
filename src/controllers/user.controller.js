@@ -297,8 +297,8 @@ const changeCurrentPassword = async (req, res, next) => {
     user.password = newPassword;
     await user.save({ validateBeforeSave: false });
 
-    res.status(200).json(new ApiResponse(200, {}, "Password changed successfully"));
     await sendPasswordChangeEmail(user);
+    return res.status(200).json(new ApiResponse(200, {}, "Password changed successfully"));
   } catch (error) {
     next(error);
   }
