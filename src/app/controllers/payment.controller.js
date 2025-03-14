@@ -45,15 +45,16 @@ const webHook = async (req, res) => {
 
         switch (notifyType) {
             case "ORDER_STATUS":
-                const emailOptions = {
-                    subject: `New Order Placed`,
-                    text: "ORDER_NO: " + orderNo
-                }
-                await email.send("naveed.sarohani@gmail.com", emailOptions)
+                // const emailOptions = {
+                //     subject: `New Order Placed`,
+                //     text: "ORDER_NO: " + orderNo
+                // }
+                // await email.send("naveed.sarohani@gmail.com", emailOptions)
                 break;
 
             case "ESIM_STATUS":
                 if (esimStatus === "CANCEL" || smdpStatus === "RELEASED") {
+                    await sendCencelEmail(orderNo, payment.userId);
                     payment.status = "CANCELLED";
                 } else if (esimStatus === "IN_USE") {
                     payment.status = "COMPLETED";
@@ -85,7 +86,7 @@ const webHook = async (req, res) => {
 
 }
 
-const sendOrderEmail = async (orderNo, user) => {
+const sendOrderEmail = async (orderNo, user,) => {
     try {
         const profiles = await axiosInstance({
             method: "POST", url: "/esim/query", data: {
@@ -106,6 +107,34 @@ const sendOrderEmail = async (orderNo, user) => {
             supportEmail: "support@roamdigi.com",
             activationGuideLink: "https://roamdigi.com/faqs",
             template: "order.confirm"
+        }
+
+        await email.send(user.email, emailOptions);
+    } catch (error) {
+        throw error;
+    }
+}
+
+const sendCencelEmail = async (orderNo, user) => {
+    try {
+        const profiles = await axiosInstance({
+            method: "POST", url: "/esim/query", data: {
+                orderNo, pager: { pageNum: 1, pageSize: 20 }
+            }
+        });
+
+        if (profiles.data?.success === false) return;
+        const data = profiles.data.obj.esimList;
+
+        const emailOptions = {
+            subject: `Your Travel eSIM Order ${orderNo} Has Been Canceled`,
+            customerName: user.name,
+            planName: data[0].packageList[0].packageName,
+            country: data[0].packageList[0].locationCode,
+            days: data[0].totalDuration,
+            dataLimit: ((data[0].totalVolume / 1024) / 1024) / 1024,
+            supportEmail: "support@roamdigi.com",
+            template: "order.cancel"
         }
 
         await email.send(user.email, emailOptions);
