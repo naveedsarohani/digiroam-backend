@@ -90,11 +90,11 @@ const sendEmail = async (req, res) => {
     console.log(req.params.paymentId, payment);
     if (!payment) return res.response(404, "Payment record not found");
 
-    await sendOrderEmail(payment);
-    res.response(200, "The order confirm email was sent");
+    await sendOrderEmail(payment, res);
+    res.response(200, "The order confirm email was sent controller");
 };
 
-const sendOrderEmail = async (payment) => {
+const sendOrderEmail = async (payment, res = null) => {
     const user = payment.userId;
 
     const profiles = await axiosInstance({
@@ -124,6 +124,8 @@ const sendOrderEmail = async (payment) => {
             text: "Failed to send order confirm email"
         });
     }
+
+    res.response(200, "The order confirm email was sent method");
 }
 
 export default { store, payments, webHook, sendEmail }
