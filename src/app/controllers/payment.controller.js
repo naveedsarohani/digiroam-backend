@@ -38,16 +38,16 @@ const payments = async (req, res) => {
 const webHook = async (req, res) => {
     try {
         const { notifyType, content } = req.body;
-        // const { orderNo, transactionId, iccid, remain, esimStatus, smdpStatus, totalVolume, expiredTime } = content;
+        const { orderNo, transactionId, iccid, remain, esimStatus, smdpStatus, totalVolume, expiredTime } = content;
 
-        const payment = await paymentService.retrieveOne({ orderNo });
+        const payment = await paymentService.retrieveOne({ transactionId });
         if (!payment) return res.response(404, "Payment record not found for the given orderNo");
 
         switch (notifyType) {
             case "ORDER_STATUS":
                 const emailOptions = {
                     subject: `New Order Placed`,
-                    text: "ORDER_NO: " + content.orderNo
+                    text: "ORDER_NO: " + orderNo
                 }
                 await email.send("naveed.sarohani@gmail.com", emailOptions)
                 break;
@@ -85,47 +85,35 @@ const webHook = async (req, res) => {
 
 }
 
-const sendEmail = async (req, res) => {
-    const payment = await paymentService.retrieveOne({ _id: req.params.paymentId });
-    console.log(req.params.paymentId, payment);
-    if (!payment) return res.response(404, "Payment record not found");
+const sendOrderEmail = async (payment) => {
+    try {
+        const user = payment.userId;
 
-    await sendOrderEmail(payment, res);
-    res.response(200, "The order confirm email was sent controller");
-};
-
-const sendOrderEmail = async (payment, res = null) => {
-    const user = payment.userId;
-
-    const profiles = await axiosInstance({
-        method: "POST", url: "/esim/query", data: {
-            orderNo: payment.orderNo, paper: { pageNum: 1, pageSize: 20 }
-        }
-    });
-
-    if (profiles.data?.success === false) return;
-    const data = profiles.data.obj;
-
-    const emailOptions = {
-        subject: `Your Travel eSIM is Ready! Order Confirmation ${payment.orderNo}`,
-        customerName: user.name.capEach(),
-        planName: data.esimList[0].packageList[0].packageName,
-        country: data.esimList[0].packageList[0].locationCode,
-        days: data.esimList[0].totalDuration,
-        dataLimit: (data.esimList[0].totalVolume / 1024) / 1024,
-        supportEmail: "support@roamdigi.com",
-        activationGuideLink: "https://roamdigi.com/faq",
-        template: "order.confirm"
-    }
-
-    if (!(await email.send('naveed.sarohani@gmail.com', emailOptions))) {
-        return await email.send("naveed.sarohani@gmail.com", {
-            subject: "Failed to send",
-            text: "Failed to send order confirm email"
+        const profiles = await axiosInstance({
+            method: "POST", url: "/esim/query", data: {
+                orderNo: payment.orderNo, pager: { pageNum: 1, pageSize: 20 }
+            }
         });
-    }
 
-    res.response(200, "The order confirm email was sent method");
+        if (profiles.data?.success === false) return;
+        const data = profiles.data.obj.esimList;
+
+        const emailOptions = {
+            subject: `Your Travel eSIM is Ready! Order Confirmation ${orderNo}`,
+            customerName: user.name.capEach(),
+            planName: data[0].packageList[0].packageName,
+            country: data[0].packageList[0].locationCode,
+            days: data[0].totalDuration,
+            dataLimit: ((data[0].totalVolume / 1024) / 1024) / 1024,
+            supportEmail: "support@roamdigi.com",
+            activationGuideLink: "https://roamdigi.com/faqs",
+            template: "order.confirm"
+        }
+
+        await email.send(user.email, emailOptions);
+    } catch (error) {
+        throw error;
+    }
 }
 
-export default { store, payments, webHook, sendEmail }
+export default { store, payments, webHook }

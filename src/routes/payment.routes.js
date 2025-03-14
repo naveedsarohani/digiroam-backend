@@ -16,9 +16,4 @@ paymentRoutes.post("/webhook/notifications",
     validate(paymentSchema.webhook), paymentController.webHook
 );
 
-// testing
-paymentRoutes.get("/send-email/:paymentId",
-    paymentController.sendEmail
-);
-
 export default paymentRoutes;
