@@ -100,7 +100,7 @@ const sendOrderEmail = async (payment) => {
 
         const emailOptions = {
             subject: `Your Travel eSIM is Ready! Order Confirmation ${payment.orderNo}`,
-            customerName: user.name.capEach(),
+            customerName: user.name,
             planName: data[0].packageList[0].packageName,
             country: data[0].packageList[0].locationCode,
             days: data[0].totalDuration,
