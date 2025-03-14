@@ -18,7 +18,7 @@ const store = async (req, res) => {
         if (!payment) return res.response(400, "Failed to save payment details");
 
         await Cart.findOneAndDelete({ userId: req.user._id });
-        await sendOrderEmail(payment);
+        await sendOrderEmail(data.orderNo, req.user);
 
         return res.response(201, "Payment stored successfully, and cart cleared");
     } catch (error) {
@@ -85,13 +85,11 @@ const webHook = async (req, res) => {
 
 }
 
-const sendOrderEmail = async (payment) => {
+const sendOrderEmail = async (orderNo, user) => {
     try {
-        const user = payment.userId;
-
         const profiles = await axiosInstance({
             method: "POST", url: "/esim/query", data: {
-                orderNo: payment.orderNo, pager: { pageNum: 1, pageSize: 20 }
+                orderNo, pager: { pageNum: 1, pageSize: 20 }
             }
         });
 
@@ -99,7 +97,7 @@ const sendOrderEmail = async (payment) => {
         const data = profiles.data.obj.esimList;
 
         const emailOptions = {
-            subject: `Your Travel eSIM is Ready! Order Confirmation ${payment.orderNo}`,
+            subject: `Your Travel eSIM is Ready! Order Confirmation ${orderNo}`,
             customerName: user.name,
             planName: data[0].packageList[0].packageName,
             country: data[0].packageList[0].locationCode,
