@@ -16,16 +16,15 @@ const send = async (req, res) => {
         })) ?? [];
 
         template.body = template.body
-            .replace(/{Customer_Name}/g, user.name ?? "Dear Customer");
+            .replace(/{Customer_Name}/g, user.name.capEach() ?? "Dear Customer");
 
         const emailOptions = {
             subject: template.subject,
-            text: template.body,
-            // template: 'otp.email',
+            html: template.body,
             attachments: emailAttachments
         };
 
-        if (!(await email.send(userEmail, emailOptions))) {
+        if (!(await email.send(user.email, emailOptions))) {
             res.response(500, "Failed to send email. Please try again");
         }
 

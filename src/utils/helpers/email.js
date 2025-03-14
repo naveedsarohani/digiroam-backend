@@ -26,6 +26,8 @@ const send = async (email, options) => {
 
     if (options.template) {
         mailOptions.html = await retrieveHtmlTemplate(options.template, options);
+    } else if (options.html) {
+        mailOptions.html = options.html;
     } else {
         mailOptions.text = options.text;
     }

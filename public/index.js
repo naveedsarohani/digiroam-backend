@@ -1,3 +1,7 @@
+import "../src/utils/extensions/array.js";
+import "../src/utils/extensions/object.js";
+import "../src/utils/extensions/string.js";
+
 import dotenv from "dotenv";
 import compression from "compression";
 import express from "express";

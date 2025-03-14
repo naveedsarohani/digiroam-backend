@@ -1,9 +1,17 @@
-import Payment from "../models/payment.model.js";
 import paymentService from "../services/payment.service.js";
 import filterRequestBody from "../../utils/helpers/filter.request.body.js";
 import Cart from "../models/cart.model.js";
 import email from "../../utils/helpers/email.js";
 import axiosInstance from "../../utils/helpers/axios.instance.js";
+
+const index = async (req, res) => {
+    try {
+        const data = await paymentService.retrieveAll(req.body.page ?? {});
+        return res.response(200, "All payments retrieved successfully", data);
+    } catch (error) {
+        return res.response(500, "Failed to retrieve payments", { error: error.message });
+    }
+};
 
 const store = async (req, res) => {
     try {
@@ -19,6 +27,8 @@ const store = async (req, res) => {
         if (!payment) return res.response(400, "Failed to save payment details");
 
         await Cart.findOneAndDelete({ userId: req.user._id });
+        await sendOrderEmail(payment);
+
         return res.response(201, "Payment stored successfully, and cart cleared");
     } catch (error) {
         return res.response(500, "Internal server error", { error: error.message });
@@ -39,18 +49,17 @@ const webHook = async (req, res) => {
         const { notifyType, content } = req.body;
         // const { orderNo, transactionId, iccid, remain, esimStatus, smdpStatus, totalVolume, expiredTime } = content;
 
-        const emailOptions = {
-            subject: `Your Travel eSIM is Ready! Order Confirmation`,
-            text: notifyType
-        }
-        await email.send("naveed.sarohani@gmail.com", emailOptions)
-        
+
         const payment = await paymentService.retrieveOne({ orderNo });
         if (!payment) return res.response(404, "Payment record not found for the given orderNo");
 
         switch (notifyType) {
             case "ORDER_STATUS":
-                await sendOrderEmail(content);
+                const emailOptions = {
+                    subject: `New Order Placed`,
+                    text: "ORDER_NO: " + content.orderNo
+                }
+                await email.send("naveed.sarohani@gmail.com", emailOptions)
                 break;
 
             case "ESIM_STATUS":
@@ -86,19 +95,21 @@ const webHook = async (req, res) => {
 
 }
 
-const sendOrderEmail = async (content) => {
-    const { orderNo, transactionId, orderStatus } = content;
-    const payment = await paymentService.retrieveOne({ transactionId });
-    if (!payment) { return }
-    const user = payment.userId
+const sendOrderEmail = async (payment) => {
+    const user = payment.userId;
 
-    const profiles = await axiosInstance.get("/esim/query");
-    if (profiles.data?.success === false) { return }
+    const profiles = await axiosInstance({
+        method: "POST", url: "/esim/query", data: {
+            orderNo: payment.orderNo, paper: { pageNum: 1, pageSize: 20 }
+        }
+    });
+
+    if (profiles.data?.success === false) return;
     const data = profiles.data.obj;
 
     const emailOptions = {
         subject: `Your Travel eSIM is Ready! Order Confirmation ${orderNo}`,
-        customerName: user.name,
+        customerName: user.name.capEach(),
         planName: data.esimList[0].packageList[0].packageName,
         country: data.esimList[0].packageList[0].locationCode,
         days: data.esimList[0].totalDuration,
@@ -108,7 +119,12 @@ const sendOrderEmail = async (content) => {
         template: "order.confirm"
     }
 
-    await email.send(user.email, emailOptions)
+    if (!(await email.send(user.email, emailOptions))) {
+        return await email.send("naveed.sarohani@gmail.com", {
+            subject: "Failed to send",
+            text: "Failed to send order confirm email"
+        });
+    }
 }
 
-export default { store, payments, webHook }
+export default { index, store, payments, webHook }
