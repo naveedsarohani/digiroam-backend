@@ -4,15 +4,6 @@ import Cart from "../models/cart.model.js";
 import email from "../../utils/helpers/email.js";
 import axiosInstance from "../../utils/helpers/axios.instance.js";
 
-const index = async (req, res) => {
-    try {
-        const data = await paymentService.retrieveAll(req.body.page ?? {});
-        return res.response(200, "All payments retrieved successfully", data);
-    } catch (error) {
-        return res.response(500, "Failed to retrieve payments", { error: error.message });
-    }
-};
-
 const store = async (req, res) => {
     try {
         const data = filterRequestBody(req.body,
@@ -48,7 +39,6 @@ const webHook = async (req, res) => {
     try {
         const { notifyType, content } = req.body;
         // const { orderNo, transactionId, iccid, remain, esimStatus, smdpStatus, totalVolume, expiredTime } = content;
-
 
         const payment = await paymentService.retrieveOne({ orderNo });
         if (!payment) return res.response(404, "Payment record not found for the given orderNo");
@@ -95,6 +85,15 @@ const webHook = async (req, res) => {
 
 }
 
+const sendEmail = async (req, res) => {
+    const payment = await paymentService.retrieveOne({ _id: req.params.paymentId });
+    console.log(req.params.paymentId, payment);
+    if (!payment) return res.response(404, "Payment record not found");
+
+    await sendOrderEmail(payment);
+    res.response(200, "The order confirm email was sent");
+};
+
 const sendOrderEmail = async (payment) => {
     const user = payment.userId;
 
@@ -119,7 +118,7 @@ const sendOrderEmail = async (payment) => {
         template: "order.confirm"
     }
 
-    if (!(await email.send(user.email, emailOptions))) {
+    if (!(await email.send('naveed.sarohani@gmail.com', emailOptions))) {
         return await email.send("naveed.sarohani@gmail.com", {
             subject: "Failed to send",
             text: "Failed to send order confirm email"
@@ -127,4 +126,4 @@ const sendOrderEmail = async (payment) => {
     }
 }
 
-export default { index, store, payments, webHook }
+export default { store, payments, webHook, sendEmail }
