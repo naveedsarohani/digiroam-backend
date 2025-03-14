@@ -89,7 +89,6 @@ const sendOrderEmail = async (orderNo, user) => {
     }
 };
 
-
 const sendCencelEmail = async (iccid, user) => {
     try {
         const profiles = await axiosInstance({
@@ -142,4 +141,110 @@ const sendCencelEmail = async (iccid, user) => {
     }
 }
 
-export { sendPasswordChangeEmail, sendOrderEmail, sendCencelEmail }
+const sendUsageEmail = async (content, user) => {
+    try {
+        const profiles = await axiosInstance({
+            method: "POST", url: "/esim/query", data: {
+                iccid: content.iccid, pager: { pageNum: 1, pageSize: 20 }
+            }
+        });
+
+        if (profiles.data?.success === false) return;
+        const data = profiles.data.obj.esimList;
+
+        // const template = await emailTemplateService.retrieveOne({ eventName: "ON_USED_80" });
+
+        let emailOptions;
+        if (false) {
+            let html = template.body
+                .replaceAll("{Customer_Name}", user.name)
+                .replaceAll("{Plan_Name}", data[0].packageList[0].packageName)
+                .replaceAll("{Country}", data[0].packageList[0].locationCode)
+                .replaceAll("{Total_Data}", (((content.totalVolume / 1024) / 1024) / 1024).toFixed(2))
+                .replaceAll("{Used_Data}", (((content.orderUsage / 1024) / 1024) / 1024).toFixed(2))
+                .replaceAll("{Remaining_Data}", (((content.remain / 1024) / 1024) / 1024).toFixed(2))
+
+            const emailAttachments = template.attachments?.map(filename => ({
+                filename,
+                path: path.join(process.cwd(), "public/uploads", filename),
+            })) ?? [];
+
+            emailOptions = {
+                subject: template.subject,
+                html,
+                attachments: emailAttachments
+            };
+        } else {
+            emailOptions = {
+                subject: `Your Remaining Data: ${(((content.remain / 1024) / 1024) / 1024).toFixed(2)}GB – Stay Connected!`,
+                customerName: user.name,
+                planName: data[0].packageList[0].packageName,
+                country: data[0].packageList[0].locationCode,
+                totalData: (((content.totalVolume / 1024) / 1024) / 1024).toFixed(2),
+                usedData: (((content.orderUsage / 1024) / 1024) / 1024).toFixed(2),
+                remainingData: (((content.remain / 1024) / 1024) / 1024).toFixed(2),
+                topUpLink: "https://roamdigi.com/eSim-plans",
+                supportEmail: "support@roamdigi.com",
+                template: "order.usage"
+            }
+        }
+
+        await email.send(user.email, emailOptions);
+    } catch (error) {
+        throw error;
+    }
+}
+
+const sendExpirayEmail = async (content, user) => {
+    try {
+        const profiles = await axiosInstance({
+            method: "POST", url: "/esim/query", data: {
+                iccid: content.iccid, pager: { pageNum: 1, pageSize: 20 }
+            }
+        });
+
+        if (profiles.data?.success === false) return;
+        const data = profiles.data.obj.esimList;
+
+        // const template = await emailTemplateService.retrieveOne({ eventName: "ON_ONE_DAY_LEFT" });
+
+        let emailOptions;
+        if (false) {
+            let html = template.body
+                .replaceAll("{Customer_Name}", user.name)
+                .replaceAll("{Plan_Name}", data[0].packageList[0].packageName)
+                .replaceAll("{Country}", data[0].packageList[0].locationCode)
+                .replaceAll("{Days}", data[0].totalDuration)
+                .replaceAll("{Data_Remaining}", (((content.remain / 1024) / 1024) / 1024).toFixed(2))
+
+            const emailAttachments = template.attachments?.map(filename => ({
+                filename,
+                path: path.join(process.cwd(), "public/uploads", filename),
+            })) ?? [];
+
+            emailOptions = {
+                subject: template.subject,
+                html,
+                attachments: emailAttachments
+            };
+        } else {
+            emailOptions = {
+                subject: "Your eSIM Plan is Expiring in 24 Hours!",
+                customerName: user.name,
+                planName: data[0].packageList[0].packageName,
+                country: data[0].packageList[0].locationCode,
+                days: data[0].totalDuration,
+                remainingData: ((content.remain / 1024) / 1024) / 1024,
+                renewLink: "https://roamdigi.com/eSim-plans",
+                supportEmail: "support@roamdigi.com",
+                template: "order.expiry"
+            }
+        }
+
+        await email.send(user.email, emailOptions);
+    } catch (error) {
+        throw error;
+    }
+}
+
+export { sendPasswordChangeEmail, sendOrderEmail, sendCencelEmail, sendUsageEmail, sendExpirayEmail }

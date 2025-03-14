@@ -1,4 +1,20 @@
-<h2>Your eSIM Plan is Expiring Soon!</h2>
 <p>Hi <%= customerName %>,</p>
-<p>Your eSIM plan for <%= country %> expires in 24 hours. Stay connected by renewing your plan now.</p>
-<p><a href="<%= renewLink %>">Renew Now</a></p>
+
+<p>Your RoamDigi eSIM plan for <strong><%= country %></strong> is set to expire in 24 hours. To ensure uninterrupted connectivity, renew your plan now.</p>
+
+<h3>Plan Details:</h3>
+<ul>
+  <li><strong>Plan Name:</strong> <%= planName %></li>
+  <li><strong>Destination:</strong> <%= country %></li>
+  <li><strong>Validity:</strong> <%= days %> Days</li>
+  <li><strong>Remaining Data:</strong> <%= remainingData %>GB</li>
+</ul>
+
+<p>Don’t let your connection end! Renew your plan now:</p>
+
+<p><a href="<%= renewLink %>" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #ffffff; text-decoration: none; border-radius: 5px;">Renew Now</a></p>
+
+<p>Need help? Our support team is available at <%= supportEmail %>.</p>
+
+<p>Best regards,</p>
+<p><strong>RoamDigi Team</strong></p>

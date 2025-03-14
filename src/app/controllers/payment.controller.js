@@ -1,7 +1,7 @@
 import paymentService from "../services/payment.service.js";
 import filterRequestBody from "../../utils/helpers/filter.request.body.js";
 import Cart from "../models/cart.model.js";
-import { sendOrderEmail, sendCencelEmail } from "../../utils/helpers/email.on.event.js";
+import { sendOrderEmail, sendCencelEmail, sendUsageEmail, sendExpirayEmail } from "../../utils/helpers/email.on.event.js";
 
 const store = async (req, res) => {
     try {
@@ -44,7 +44,7 @@ const webHook = async (req, res) => {
 
         switch (notifyType) {
             case "ORDER_STATUS":
-                // await sendOrderEmail(orderNo, { name: "Naveed Sarohani", email: "naveed.sarohani@gmail.com" })
+                await sendOrderEmail(orderNo, { name: "Naveed Sarohani", email: "naveed.sarohani@gmail.com" })
                 break;
 
             case "ESIM_STATUS":
@@ -53,17 +53,14 @@ const webHook = async (req, res) => {
                     payment.status = "CANCELLED";
                 } else if (esimStatus === "IN_USE") {
                     payment.status = "COMPLETED";
-                }
-                break;
+                } break;
 
             case "DATA_USAGE":
-                console.log(`Data usage alert for eSIM with ICCID ${iccid}. Remaining data: ${remain}MB`);
-
+                await sendUsageEmail(content, payment.userId);
                 break;
 
             case "VALIDITY_USAGE":
-                console.log(`Validity alert for eSIM with ICCID ${iccid}. Remaining days: ${remain}`);
-
+                await sendExpirayEmail(content, payment.userId);
                 break;
 
             default:
@@ -73,10 +70,9 @@ const webHook = async (req, res) => {
 
         await paymentService.update(payment._id, { status: payment.status });
 
-        res.status(200).json({ success: true });
+        return res.response(200, "OK");
     } catch (error) {
-        console.error("Webhook processing error:", error);
-        res.status(500).json({ error: "Internal Server Error" });
+        return res.response(500, "Internal Server Error");
     }
 
 }
