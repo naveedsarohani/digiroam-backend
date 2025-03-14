@@ -51,7 +51,13 @@ app.use(rateLimit({
 
 // root Route
 app.get("/", (req, res) => {
-    res.response(200, "Backend is working fine!");
+    res.response(200, "Backend is up and fine!", {
+        developer: {
+            name: "naveed sarohani".capEach(),
+            email: "naveed.sarohani@gmail.com",
+            linkedIn: "https://linkedin.com/in/naveedsarohani"
+        }
+    });
 });
 
 // api routes
