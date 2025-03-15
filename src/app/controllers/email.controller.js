@@ -39,7 +39,7 @@ const send = async (req, res) => {
 
                 // email options
                 const emailOptions = {
-                    subject: template.subject + (!!index && "eSim: " + profile.iccid),
+                    subject: template.subject,
                     html: template.body,
                     attachments: emailAttachments
                 };
