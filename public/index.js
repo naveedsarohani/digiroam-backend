@@ -49,8 +49,9 @@ app.use(rateLimit({
 app.get("/", (_, res) => {
     res.response(200, "Backend is up and fine!", {
         developer: {
-            name: "Saveed Sarohani",
+            name: "Naveed Sarohani",
             email: "naveed.sarohani@gmail.com",
+            title: "Back End Developer @ iCreativez",
             linkedIn: "https://linkedin.com/in/naveedsarohani"
         }
     });
