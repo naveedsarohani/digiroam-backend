@@ -5,20 +5,7 @@ const EmailSchema = new mongoose.Schema(
         eventName: {
             type: String,
             required: true,
-            enum: [
-                "ON_PURCHASE",
-                "ON_CANCEL",
-                "ON_ONE_DAY_LEFT",
-                "ON_USED_80",
-                "ON_OFF_20",
-                "ON_OFF_50",
-                "ON_OFF_80",
-                "ON_TOP_UP",
-                "ON_EXPIRED",
-                "ON_PASSWORD_CHANGE",
-                "ON_LOGIN",
-                "ON_DISCOUNT"
-            ],
+            enum: ["ON_LOGIN", "ON_PASSWORD_CHANGE", "ON_PURCHASE", "ON_CANCEL", "ON_USAGE_80", "ON_1D_VALIDITY", "ON_EXPIRED", "ON_DISCOUNT", "ON_ACTIVATION_REMINDER"],
         },
         subject: {
             type: String,
