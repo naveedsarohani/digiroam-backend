@@ -17,7 +17,7 @@ const store = async (req, res) => {
         if (!payment) return res.response(400, "Failed to save payment details");
 
         await Cart.findOneAndDelete({ userId: req.user._id });
-        await emailOnEvent.orderPurchase(data.orderNo, req.user);
+        // await emailOnEvent.orderPurchase(data.orderNo, req.user);
 
         return res.response(201, "Payment stored successfully, and cart cleared");
     } catch (error) {
@@ -44,6 +44,7 @@ const webHook = async (req, res) => {
 
         switch (notifyType) {
             case "ORDER_STATUS":
+                await emailOnEvent.orderPurchase(orderNo, payment.userId);
                 // await sendOrderEmail(orderNo, { name: "Naveed Sarohani", email: "naveed.sarohani@gmail.com" })
                 break;
 
@@ -56,8 +57,10 @@ const webHook = async (req, res) => {
                 } break;
 
             case "DATA_USAGE":
-                await emailOnEvent.orderUsage(payment.userId);
-                break;
+                const consumedPercentage = ((totalVolume - remain) / totalVolume) * 100;
+                if (consumedPercentage >= 79 && consumedPercentage <= 89) {
+                    await emailOnEvent.orderUsage(payment.userId);
+                } break;
 
             case "VALIDITY_USAGE":
                 await emailOnEvent.orderValidity(content, payment.userId);
@@ -69,12 +72,10 @@ const webHook = async (req, res) => {
         }
 
         await paymentService.update(payment._id, { status: payment.status });
-
         return res.response(200, "OK");
     } catch (error) {
         return res.response(500, "Internal Server Error");
     }
-
 }
 
 export default { store, payments, webHook }

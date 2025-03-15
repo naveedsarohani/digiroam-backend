@@ -113,7 +113,8 @@ const orderCencel = async (iccid, user) => {
                 .replaceAll("{{PLAN_NAME}}", profile.packageList[0].packageName)
                 .replaceAll("{{COUNTRY}}", profile.packageList[0].locationCode)
                 .replaceAll("{{DAYS}}", profile.totalDuration)
-                .replaceAll("{{DATA_LIMIT}}", (((profile.totalVolume / 1024) / 1024) / 1024));
+                .replaceAll("{{DATA_LIMIT}}", (((profile.totalVolume / 1024) / 1024) / 1024))
+                .replaceAll("{{ICCID}}", iccid);
 
             emailOptions = {
                 subject: template.subject.replace("{{ICCID}}", iccid),
