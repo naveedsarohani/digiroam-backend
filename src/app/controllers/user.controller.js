@@ -3,7 +3,7 @@ import userService from "../services/user.service.js";
 
 const index = async (req, res) => {
     try {
-        const users = await userService.retrieveAll(req.body.page ?? { size: 1000, query: { accountType: 1 } });
+        const users = await userService.retrieveAll({ size: 1000, query: { accountType: 1 } });
         return res.response(200, "All user accounts have been retrieved", { users });
     } catch (error) {
         return res.response(500, "Failed to retrieve user accounts", { error: error.message });

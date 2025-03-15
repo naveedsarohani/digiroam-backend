@@ -16,8 +16,8 @@ const send = Joi.object({
         "any.required": "user email is required",
     }),
 
-    orderNo: Joi.string().optional(),
-    iccid: Joi.string().optional(),
+    orderNo: Joi.optional(),
+    iccid: Joi.optional(),
 });
 
 export default { send };
