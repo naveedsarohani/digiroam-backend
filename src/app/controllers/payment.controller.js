@@ -1,7 +1,7 @@
 import paymentService from "../services/payment.service.js";
 import filterRequestBody from "../../utils/helpers/filter.request.body.js";
 import Cart from "../models/cart.model.js";
-import { sendOrderEmail, sendCencelEmail, sendUsageEmail, sendExpirayEmail } from "../../utils/helpers/email.on.event.js";
+import emailOnEvent from "../../utils/helpers/email.on.event.js";
 
 const store = async (req, res) => {
     try {
@@ -17,7 +17,7 @@ const store = async (req, res) => {
         if (!payment) return res.response(400, "Failed to save payment details");
 
         await Cart.findOneAndDelete({ userId: req.user._id });
-        await sendOrderEmail(data.orderNo, req.user);
+        await emailOnEvent.orderPurchase(data.orderNo, req.user);
 
         return res.response(201, "Payment stored successfully, and cart cleared");
     } catch (error) {
@@ -44,23 +44,23 @@ const webHook = async (req, res) => {
 
         switch (notifyType) {
             case "ORDER_STATUS":
-                await sendOrderEmail(orderNo, { name: "Naveed Sarohani", email: "naveed.sarohani@gmail.com" })
+                // await sendOrderEmail(orderNo, { name: "Naveed Sarohani", email: "naveed.sarohani@gmail.com" })
                 break;
 
             case "ESIM_STATUS":
                 if (esimStatus === "CANCEL" || smdpStatus === "RELEASED") {
-                    await sendCencelEmail(iccid, payment.userId);
+                    await emailOnEvent.orderCencel(iccid, payment.userId);
                     payment.status = "CANCELLED";
                 } else if (esimStatus === "IN_USE") {
                     payment.status = "COMPLETED";
                 } break;
 
             case "DATA_USAGE":
-                await sendUsageEmail(content, payment.userId);
+                await emailOnEvent.orderUsage(payment.userId);
                 break;
 
             case "VALIDITY_USAGE":
-                await sendExpirayEmail(content, payment.userId);
+                await emailOnEvent.orderValidity(content, payment.userId);
                 break;
 
             default:

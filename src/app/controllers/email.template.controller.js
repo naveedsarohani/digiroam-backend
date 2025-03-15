@@ -4,7 +4,7 @@ import filterRequestBody from "../../utils/helpers/filter.request.body.js";
 
 const index = async (req, res) => {
     try {
-        const data = await emailService.retrieveAll(req.body.page ?? {});
+        const data = await emailService.retrieveAll(req.body.page ?? { size: 1000 });
         return res.response(200, "All email templates retrieved successfully", data);
     } catch (error) {
         return res.response(500, "Failed to retrieve email templates", { error: error.message });

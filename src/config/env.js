@@ -90,6 +90,10 @@ export const server = {
   port: process.env.SERVER_PORT
 }
 
+export const application = {
+  supportEmail: process.env.APP_SUPPORT_EMAIL
+}
+
 export const database = {
   uri: process.env.DB_URI,
   port: process.env.DB_PORT,

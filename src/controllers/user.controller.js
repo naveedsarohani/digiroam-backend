@@ -7,9 +7,9 @@ import { transporter } from "../utils/sendMail.js";
 import { TWILIO_ID, TWILIO_TOKEN, TWILIO_WHATSAPP_NUMBER, SENDER_EMAIL } from "../config/env.js";
 import { OtpVerification } from "../models/otpVerification.model.js";
 import Twilio from "twilio";
-import { sendPasswordChangeEmail } from "../utils/helpers/email.on.event.js";
-configDotenv();
+import emailOnEvent from "../utils/helpers/email.on.event.js";
 
+configDotenv();
 
 const twilio_client = Twilio(TWILIO_ID, TWILIO_TOKEN);
 
@@ -34,7 +34,6 @@ const sendWhatsAppOtp = async (req, res, next) => {
     res.status(500).json({ message: "Failed to send OTP.", error });
   }
 };
-
 
 const CreateUserAndSendOtp = async (req, res, next) => {
   const { name, email, password } = req.body;
@@ -78,6 +77,7 @@ const CreateUserAndSendOtp = async (req, res, next) => {
     next(error);
   }
 };
+
 const verifyOtp = async (req, res, next) => {
   const { otp, email } = req.body;
 
@@ -157,14 +157,16 @@ const login = async (req, res, next) => {
 
     const accessToken = await logginedUser.generateAccessToken();
 
+    // trigger email to notify user
+    await emailOnEvent.newLogin(logginedUser);
+
     const options = {
       path: "/",
       httpOnly: true,
       sameSite: "None",
       secure: true,
     };
-    res
-      .status(200)
+    res.status(200)
       .cookie("accessToken", accessToken, options)
       .json(
         new ApiResponse(
@@ -297,7 +299,7 @@ const changeCurrentPassword = async (req, res, next) => {
     user.password = newPassword;
     await user.save({ validateBeforeSave: false });
 
-    await sendPasswordChangeEmail(user);
+    await emailOnEvent.passwordChange(user);
     return res.status(200).json(new ApiResponse(200, {}, "Password changed successfully"));
   } catch (error) {
     next(error);
@@ -379,7 +381,7 @@ const forgotPasswordOtpVerification = async (req, res, next) => {
 
     const mailSend = await transporter.sendMail(mailOptions);
 
-    await sendPasswordChangeEmail(user);
+    await emailOnEvent.passwordChange(user);
     return res
       .status(200)
       .json(

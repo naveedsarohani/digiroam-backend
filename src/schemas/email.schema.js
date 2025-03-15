@@ -28,6 +28,9 @@ const send = Joi.object({
         "any.email": "user email must be a valid email",
         "any.required": "user email is required",
     }),
+
+    orderNo: Joi.string().optional(),
+    iccid: Joi.string().optional(),
 });
 
 export default { send };

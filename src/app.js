@@ -27,7 +27,7 @@ apiRoutes.use("/eSim", eSimRoute);
 apiRoutes.use("/payment", paymentGatewayRoutes);
 apiRoutes.use("/cart", cartRoute);
 apiRoutes.use("/paymentSave", paymentRoutes)
-apiRoutes.use("/x-users", userRoutes)
+apiRoutes.use("/users", userRoutes)
 apiRoutes.use("/email", emailRoutes)
 apiRoutes.use("/email-templates", emailTemplateRoutes)
 

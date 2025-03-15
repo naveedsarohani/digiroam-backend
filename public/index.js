@@ -1,7 +1,3 @@
-import "../src/utils/extensions/array.js";
-import "../src/utils/extensions/object.js";
-import "../src/utils/extensions/string.js";
-
 import dotenv from "dotenv";
 import compression from "compression";
 import express from "express";
@@ -49,11 +45,11 @@ app.use(rateLimit({
     message: "Too many requests, Please try again later.",
 }));
 
-// root Route
-app.get("/", (req, res) => {
+// root route
+app.get("/", (_, res) => {
     res.response(200, "Backend is up and fine!", {
         developer: {
-            name: "naveed sarohani".capEach(),
+            name: "Saveed Sarohani",
             email: "naveed.sarohani@gmail.com",
             linkedIn: "https://linkedin.com/in/naveedsarohani"
         }

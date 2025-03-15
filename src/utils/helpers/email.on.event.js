@@ -1,33 +1,28 @@
 import emailTemplateService from "../../app/services/email.template.service.js";
+import { application } from "../../config/env.js";
 import axiosInstance from "./axios.instance.js";
 import email from "./email.js";
-import path from "path";
 
-const sendPasswordChangeEmail = async (user) => {
+// security email alerts
+const newLogin = async (user) => {
     try {
-        // const template = await emailTemplateService.retrieveOne({ eventName: "ON_PASSWORD_CHANGE" });
+        const template = await emailTemplateService.retrieveOne({ eventName: "ON_LOGIN" });
 
         let emailOptions;
-        if (false) {
-            let html = template.body
-                .replaceAll("{Customer_Name}", user.name)
-
-            const emailAttachments = template.attachments?.map(filename => ({
-                filename,
-                path: path.join(process.cwd(), "public/uploads", filename),
-            })) ?? [];
+        if (template) {
+            const htmlContent = template.body
+                .replaceAll("{{CUSTOMER_NAME}}", user.name);
 
             emailOptions = {
                 subject: template.subject,
-                html,
-                attachments: emailAttachments
+                html: htmlContent,
             };
         } else {
             emailOptions = {
-                subject: "RoamDigi - Your Password Has Been Changed",
-                customerName: user.name,
-                supportEmail: "support@roamdigi.com",
-                template: "password.change"
+                subject: "New Login Detected – Was This You?",
+                CUSTOMER_NAME: user.name,
+                SUPPORT_EMAIL: application.supportEmail,
+                template: "email_templates/login.attempt"
             };
         }
 
@@ -37,49 +32,25 @@ const sendPasswordChangeEmail = async (user) => {
     }
 };
 
-const sendOrderEmail = async (orderNo, user) => {
+const passwordChange = async (user) => {
     try {
-        const profiles = await axiosInstance({
-            method: "POST",
-            url: "/esim/query",
-            data: { orderNo, pager: { pageNum: 1, pageSize: 20 } }
-        });
-
-        if (!profiles.data?.success) return;
-        const data = profiles.data.obj.esimList;
-
-        // const template = await emailTemplateService.retrieveOne({ eventName: "ON_PURCHASE" });
+        const template = await emailTemplateService.retrieveOne({ eventName: "ON_PASSWORD_CHANGE" });
 
         let emailOptions;
-        if (false) {
-            let html = template.body
-                .replaceAll("{Customer_Name}", user.name)
-                .replaceAll("{Plan_Name}", data[0].packageList[0].packageName)
-                .replaceAll("{Country}", data[0].packageList[0].locationCode)
-                .replaceAll("{Days}", data[0].totalDuration)
-                .replaceAll("{Data_Limit}", (((data[0].totalVolume / 1024) / 1024) / 1024).toFixed(2))
-
-            const emailAttachments = template.attachments?.map(filename => ({
-                filename,
-                path: path.join(process.cwd(), "public/uploads", filename),
-            })) ?? [];
+        if (template) {
+            const htmlContent = template.body
+                .replaceAll("{{CUSTOMER_NAME}}", user.name);
 
             emailOptions = {
                 subject: template.subject,
-                html,
-                attachments: emailAttachments
+                html: htmlContent,
             };
         } else {
             emailOptions = {
-                subject: `Your Travel eSIM is Ready! Order Confirmation ${orderNo}`,
-                customerName: user.name,
-                planName: data[0].packageList[0].packageName,
-                country: data[0].packageList[0].locationCode,
-                days: data[0].totalDuration,
-                dataLimit: ((data[0].totalVolume / 1024) / 1024) / 1024,
-                supportEmail: "support@roamdigi.com",
-                activationGuideLink: "https://roamdigi.com/faqs",
-                template: "order.confirm"
+                subject: "Account Password Changed – Was This You?",
+                CUSTOMER_NAME: user.name,
+                SUPPORT_EMAIL: application.supportEmail,
+                template: "email_templates/password.change"
             };
         }
 
@@ -89,50 +60,105 @@ const sendOrderEmail = async (orderNo, user) => {
     }
 };
 
-const sendCencelEmail = async (iccid, user) => {
+const orderPurchase = async (orderNo, user) => {
     try {
-        const profiles = await axiosInstance({
-            method: "POST", url: "/esim/query", data: {
-                iccid, pager: { pageNum: 1, pageSize: 20 }
+        const profiles = await retrieveProfiles({ orderNo });
+        const template = await emailTemplateService.retrieveOne({ eventName: "ON_PURCHASE" });
+
+        const emailPromises = profiles.map((profile) => {
+            let emailOptions;
+            if (template) {
+                const htmlContent = template.body
+                    .replaceAll("{{CUSTOMER_NAME}}", user.name)
+                    .replaceAll("{{PLAN_NAME}}", profile.packageList[0].packageName)
+                    .replaceAll("{{COUNTRY}}", profile.packageList[0].locationCode)
+                    .replaceAll("{{DAYS}}", profile.totalDuration)
+                    .replaceAll("{{DATA_LIMIT}}", (((profile.totalVolume / 1024) / 1024) / 1024));
+
+                emailOptions = {
+                    subject: template.subject.replace("{{ORDER_ID}}", orderNo),
+                    html: htmlContent,
+                };
+            } else {
+                emailOptions = {
+                    subject: `Your Travel eSIM is Ready! Order Confirmation #${orderNo}`,
+                    CUSTOMER_NAME: user.name,
+                    PLAN_NAME: profile.packageList[0].packageName,
+                    COUNTRY: profile.packageList[0].locationCode,
+                    DAYS: profile.totalDuration,
+                    DATA_LIMIT: ((profile.totalVolume / 1024) / 1024) / 1024,
+                    SUPPORT_EMAIL: application.supportEmail,
+                    template: "email_templates/order.confirm"
+                };
             }
+
+            return email.send(user.email, emailOptions);
         });
 
-        if (profiles.data?.success === false) return;
-        const data = profiles.data.obj.esimList;
+        await Promise.all(emailPromises);
+    } catch (error) {
+        throw error;
+    }
+};
 
-        // const template = await emailTemplateService.retrieveOne({ eventName: "ON_PURCHASE" });
+const orderCencel = async (iccid, user) => {
+    try {
+        const profile = (await retrieveProfiles({ iccid })).at(0);
+        const template = await emailTemplateService.retrieveOne({ eventName: "ON_CANCEL" });
 
         let emailOptions;
-        if (false) {
-            let html = template.body
-                .replaceAll("{Customer_Name}", user.name)
-                .replaceAll("{Plan_Name}", data[0].packageList[0].packageName)
-                .replaceAll("{Country}", data[0].packageList[0].locationCode)
-                .replaceAll("{Days}", data[0].totalDuration)
-                .replaceAll("{Data_Limit}", (((data[0].totalVolume / 1024) / 1024) / 1024).toFixed(2))
-
-            const emailAttachments = template.attachments?.map(filename => ({
-                filename,
-                path: path.join(process.cwd(), "public/uploads", filename),
-            })) ?? [];
+        if (template) {
+            const htmlContent = template.body
+                .replaceAll("{{CUSTOMER_NAME}}", user.name)
+                .replaceAll("{{PLAN_NAME}}", profile.packageList[0].packageName)
+                .replaceAll("{{COUNTRY}}", profile.packageList[0].locationCode)
+                .replaceAll("{{DAYS}}", profile.totalDuration)
+                .replaceAll("{{DATA_LIMIT}}", (((profile.totalVolume / 1024) / 1024) / 1024));
 
             emailOptions = {
-                subject: template.subject,
-                html,
-                attachments: emailAttachments
+                subject: template.subject.replace("{{ICCID}}", iccid),
+                html: htmlContent,
             };
         } else {
             emailOptions = {
-                subject: `Your Travel eSIM ICCID ${iccid} Has Been Canceled`,
-                customerName: user.name,
-                planName: data[0].packageList[0].packageName,
-                country: data[0].packageList[0].locationCode,
-                days: data[0].totalDuration,
-                dataLimit: ((data[0].totalVolume / 1024) / 1024) / 1024,
-                orderNo: data[0].orderNo,
-                supportEmail: "support@roamdigi.com",
-                template: "order.cancel"
-            }
+                subject: `Your Travel eSIM #${iccid} Has Been Canceled`,
+                CUSTOMER_NAME: user.name,
+                ICCID: iccid,
+                PLAN_NAME: profile.packageList[0].packageName,
+                COUNTRY: profile.packageList[0].locationCode,
+                DAYS: profile.totalDuration,
+                DATA_LIMIT: ((profile.totalVolume / 1024) / 1024) / 1024,
+                SUPPORT_EMAIL: application.supportEmail,
+                template: "email_templates/order.cancel"
+            };
+        }
+
+        await email.send(user.email, emailOptions);
+    } catch (error) {
+        throw error;
+    }
+};
+
+const orderUsage = async (user) => {
+    try {
+        const template = await emailTemplateService.retrieveOne({ eventName: "ON_USAGE_80" });
+
+        let emailOptions;
+        if (template) {
+            const htmlContent = template.body
+                .replaceAll("{{CUSTOMER_NAME}}", user.name);
+
+            emailOptions = {
+                subject: template.subject,
+                html: htmlContent,
+            };
+        } else {
+            emailOptions = {
+                subject: "You’ve Used 80% of Your Data – Top Up Now!",
+                CUSTOMER_NAME: user.name,
+                SUPPORT_EMAIL: application.supportEmail,
+                template: "email_templates/order.usage"
+            };
         }
 
         await email.send(user.email, emailOptions);
@@ -141,52 +167,28 @@ const sendCencelEmail = async (iccid, user) => {
     }
 }
 
-const sendUsageEmail = async (content, user) => {
+const orderValidity = async (content, user) => {
     try {
-        const profiles = await axiosInstance({
-            method: "POST", url: "/esim/query", data: {
-                iccid: content.iccid, pager: { pageNum: 1, pageSize: 20 }
-            }
-        });
-
-        if (profiles.data?.success === false) return;
-        const data = profiles.data.obj.esimList;
-
-        // const template = await emailTemplateService.retrieveOne({ eventName: "ON_USED_80" });
+        const profile = (await retrieveProfiles({ iccid: content.iccid })).at(0);
+        const template = await emailTemplateService.retrieveOne({ eventName: "ON_1D_VALIDITY" });
 
         let emailOptions;
-        if (false) {
-            let html = template.body
-                .replaceAll("{Customer_Name}", user.name)
-                .replaceAll("{Plan_Name}", data[0].packageList[0].packageName)
-                .replaceAll("{Country}", data[0].packageList[0].locationCode)
-                .replaceAll("{Total_Data}", (((content.totalVolume / 1024) / 1024) / 1024).toFixed(2))
-                .replaceAll("{Used_Data}", (((content.orderUsage / 1024) / 1024) / 1024).toFixed(2))
-                .replaceAll("{Remaining_Data}", (((content.remain / 1024) / 1024) / 1024).toFixed(2))
-
-            const emailAttachments = template.attachments?.map(filename => ({
-                filename,
-                path: path.join(process.cwd(), "public/uploads", filename),
-            })) ?? [];
+        if (template) {
+            const htmlContent = template.body
+                .replaceAll("{{CUSTOMER_NAME}}", user.name)
+                .replaceAll("{{COUNTRY}}", profile.packageList[0].locationCode);
 
             emailOptions = {
                 subject: template.subject,
-                html,
-                attachments: emailAttachments
+                html: htmlContent,
             };
         } else {
             emailOptions = {
-                subject: `Your Remaining Data: ${(((content.remain / 1024) / 1024) / 1024).toFixed(2)}GB – Stay Connected!`,
-                customerName: user.name,
-                planName: data[0].packageList[0].packageName,
-                country: data[0].packageList[0].locationCode,
-                totalData: (((content.totalVolume / 1024) / 1024) / 1024).toFixed(2),
-                usedData: (((content.orderUsage / 1024) / 1024) / 1024).toFixed(2),
-                remainingData: (((content.remain / 1024) / 1024) / 1024).toFixed(2),
-                topUpLink: "https://roamdigi.com/eSim-plans",
-                supportEmail: "support@roamdigi.com",
-                template: "order.usage"
-            }
+                subject: "Your eSIM Plan is Expiring Soon!",
+                CUSTOMER_NAME: user.name,
+                COUNTRY: profile.packageList[0].locationCode,
+                template: "email_templates/order.validity"
+            };
         }
 
         await email.send(user.email, emailOptions);
@@ -195,50 +197,26 @@ const sendUsageEmail = async (content, user) => {
     }
 }
 
-const sendExpirayEmail = async (content, user) => {
+const orderExpired = async (user) => {
     try {
-        const profiles = await axiosInstance({
-            method: "POST", url: "/esim/query", data: {
-                iccid: content.iccid, pager: { pageNum: 1, pageSize: 20 }
-            }
-        });
-
-        if (profiles.data?.success === false) return;
-        const data = profiles.data.obj.esimList;
-
-        // const template = await emailTemplateService.retrieveOne({ eventName: "ON_ONE_DAY_LEFT" });
+        const template = await emailTemplateService.retrieveOne({ eventName: "ON_EXPIRED" });
 
         let emailOptions;
-        if (false) {
-            let html = template.body
-                .replaceAll("{Customer_Name}", user.name)
-                .replaceAll("{Plan_Name}", data[0].packageList[0].packageName)
-                .replaceAll("{Country}", data[0].packageList[0].locationCode)
-                .replaceAll("{Days}", data[0].totalDuration)
-                .replaceAll("{Data_Remaining}", (((content.remain / 1024) / 1024) / 1024).toFixed(2))
-
-            const emailAttachments = template.attachments?.map(filename => ({
-                filename,
-                path: path.join(process.cwd(), "public/uploads", filename),
-            })) ?? [];
+        if (template) {
+            const htmlContent = template.body
+                .replaceAll("{{CUSTOMER_NAME}}", user.name)
 
             emailOptions = {
                 subject: template.subject,
-                html,
-                attachments: emailAttachments
+                html: htmlContent,
             };
         } else {
             emailOptions = {
-                subject: "Your eSIM Plan is Expiring in 24 Hours!",
-                customerName: user.name,
-                planName: data[0].packageList[0].packageName,
-                country: data[0].packageList[0].locationCode,
-                days: data[0].totalDuration,
-                remainingData: ((content.remain / 1024) / 1024) / 1024,
-                renewLink: "https://roamdigi.com/eSim-plans",
-                supportEmail: "support@roamdigi.com",
-                template: "order.expiry"
-            }
+                subject: "Your eSIM Has Expired – Stay Connected!",
+                CUSTOMER_NAME: user.name,
+                SUPPORT_EMAIL: application.supportEmail,
+                template: "email_templates/order.validity"
+            };
         }
 
         await email.send(user.email, emailOptions);
@@ -247,4 +225,20 @@ const sendExpirayEmail = async (content, user) => {
     }
 }
 
-export { sendPasswordChangeEmail, sendOrderEmail, sendCencelEmail, sendUsageEmail, sendExpirayEmail }
+// eSim email alerts
+export const retrieveProfiles = async ({ orderNo = null, iccid = null }) => {
+    try {
+        const response = await axiosInstance.post("/esim/query", {
+            ...(orderNo && { orderNo }),
+            ...(iccid && { iccid }),
+            pager: { pageNum: 1, pageSize: 20 }
+        });
+
+        if (!response.data?.success) return [];
+        return response.data.obj?.esimList ?? [];
+    } catch (error) {
+        throw error;
+    }
+};
+
+export default { newLogin, passwordChange, orderPurchase, orderCencel, orderUsage, orderValidity, orderExpired }
