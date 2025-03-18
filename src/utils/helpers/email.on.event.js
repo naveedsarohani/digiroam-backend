@@ -2,20 +2,16 @@ import emailTemplateService from "../../app/services/email.template.service.js";
 import { application } from "../../config/env.js";
 import axiosInstance from "./axios.instance.js";
 import email from "./email.js";
-import formatDatetime from "./format.datetime.js";
 
 // security email alerts
-const newLogin = async (user, { deviceName, location, loginTime }) => {
+const newLogin = async (user) => {
     try {
         const template = await emailTemplateService.retrieveOne({ eventName: "ON_LOGIN" });
 
         let emailOptions;
         if (template) {
             const htmlContent = template.body
-                .replaceAll("{{CUSTOMER_NAME}}", user.name)
-                .replaceAll("{{DEVICE_NAME}}", deviceName)
-                .replaceAll("{{LOCATION}}", location)
-                .replaceAll("{{LOGIN_TIME}}", formatDatetime(loginTime));
+                .replaceAll("{{CUSTOMER_NAME}}", user.name);
 
             emailOptions = {
                 subject: template.subject,
@@ -23,11 +19,8 @@ const newLogin = async (user, { deviceName, location, loginTime }) => {
             };
         } else {
             emailOptions = {
-                subject: "New Device Login Detected - Was This You?",
+                subject: "New Login Detected - Was This You?",
                 CUSTOMER_NAME: user.name,
-                DEVICE_NAME: deviceName,
-                LOCATION: location,
-                LOGIN_TIME: formatDatetime(loginTime),
                 SUPPORT_EMAIL: application.supportEmail,
                 template: "email_templates/login.attempt"
             };

@@ -159,7 +159,7 @@ const login = async (req, res, next) => {
     const accessToken = await logginedUser.generateAccessToken();
 
     // login alert email
-    emailOnEvent.newLogin(logginedUser, currentDevice);
+    emailOnEvent.newLogin(logginedUser);
 
     res.status(200).cookie("accessToken", accessToken, {
       path: "/", httpOnly: true, sameSite: "None", secure: true,
