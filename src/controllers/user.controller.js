@@ -174,7 +174,7 @@ const login = async (req, res, next) => {
 
     res.status(200).cookie("accessToken", accessToken, {
       path: "/", httpOnly: true, sameSite: "None", secure: true,
-    }).json(new ApiResponse(200, { user: logginedUser, accessToken: accessToken }, "Sucessfully logged in"));
+    }).json(new ApiResponse(200, { user: logginedUser, accessToken: accessToken, fingerprint: currentDevice }, "Sucessfully logged in"));
 
   } catch (error) {
     next(error);
