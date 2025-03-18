@@ -167,11 +167,10 @@ const login = async (req, res, next) => {
     const fingerprint = await DeviceFingerprint.findOne({ userId: logginedUser._id, fingerprint: currentDevice.fingerprint });
 
     // Save and send an alert for login from unrecognized device, if device fingerprint not found
-    if (!fingerprint) Promise.allSettled([
-      DeviceFingerprint.create({ userId: logginedUser._id, ...currentDevice }),
-      emailOnEvent.newLogin(logginedUser, fingerprint)
-    ]);
-
+    if (!fingerprint) {
+      await DeviceFingerprint.create({ userId: logginedUser._id, ...currentDevice });
+      await emailOnEvent.newLogin(logginedUser, fingerprint);
+    };
 
     res.status(200).cookie("accessToken", accessToken, {
       path: "/", httpOnly: true, sameSite: "None", secure: true,
