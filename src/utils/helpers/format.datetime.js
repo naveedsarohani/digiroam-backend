@@ -3,7 +3,7 @@ const formatDatetime = (loginTime) => {
 
     // Options for formatting
     const options = {
-        weekday: "short",
+        weekday: "long",
         year: "numeric",
         month: "short",
         day: "2-digit",
