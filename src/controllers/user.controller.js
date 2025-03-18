@@ -160,10 +160,6 @@ const login = async (req, res, next) => {
     const logginedUser = await User.findOne({ email }).select("-password");
     const accessToken = await logginedUser.generateAccessToken();
 
-    res.status(200).cookie("accessToken", accessToken, {
-      path: "/", httpOnly: true, sameSite: "None", secure: true,
-    }).json(new ApiResponse(200, { user: logginedUser, accessToken: accessToken }, "Sucessfully logged in"));
-
     // collect device info and fingerprint hash
     const currentDevice = await createDeviceFingerprint(req);
 
@@ -176,6 +172,10 @@ const login = async (req, res, next) => {
       emailOnEvent.newLogin(logginedUser, fingerprint)
     ]);
 
+
+    res.status(200).cookie("accessToken", accessToken, {
+      path: "/", httpOnly: true, sameSite: "None", secure: true,
+    }).json(new ApiResponse(200, { user: logginedUser, accessToken: accessToken, device: fingerprint }, "Sucessfully logged in"));
   } catch (error) {
     next(error);
   }
