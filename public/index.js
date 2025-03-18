@@ -51,7 +51,7 @@ app.get("/", (_, res) => {
         developer: {
             name: "Naveed Sarohani",
             email: "naveed.sarohani@gmail.com",
-            title: "Back End Developer @ iCreativez",
+            position: "Back End Developer @ iCreativez",
             linkedIn: "https://linkedin.com/in/naveedsarohani"
         }
     });

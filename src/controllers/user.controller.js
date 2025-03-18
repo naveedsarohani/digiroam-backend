@@ -8,6 +8,8 @@ import { TWILIO_ID, TWILIO_TOKEN, TWILIO_WHATSAPP_NUMBER, SENDER_EMAIL } from ".
 import { OtpVerification } from "../models/otpVerification.model.js";
 import Twilio from "twilio";
 import emailOnEvent from "../utils/helpers/email.on.event.js";
+import DeviceFingerprint from "../app/models/device.fingerprint.model.js";
+import createDeviceFingerprint from "../utils/helpers/create.device.fingerprint.js";
 
 configDotenv();
 
@@ -138,6 +140,7 @@ const login = async (req, res, next) => {
     if (!checkPassword) {
       return next(new ApiError(400, "email or Password is incorrect "));
     }
+
     if (!user.verified) {
       const otp = await generateAndSaveOtp(email);
       const mailOptions = {
@@ -153,28 +156,26 @@ const login = async (req, res, next) => {
         data: { email, verified: false },
       });
     }
-    const logginedUser = await User.findOne({ email }).select("-password");
 
+    const logginedUser = await User.findOne({ email }).select("-password");
     const accessToken = await logginedUser.generateAccessToken();
 
-    // trigger email to notify user
-    await emailOnEvent.newLogin(logginedUser);
+    res.status(200).cookie("accessToken", accessToken, {
+      path: "/", httpOnly: true, sameSite: "None", secure: true,
+    }).json(new ApiResponse(200, { user: logginedUser, accessToken: accessToken }, "Sucessfully logged in"));
 
-    const options = {
-      path: "/",
-      httpOnly: true,
-      sameSite: "None",
-      secure: true,
-    };
-    res.status(200)
-      .cookie("accessToken", accessToken, options)
-      .json(
-        new ApiResponse(
-          200,
-          { user: logginedUser, accessToken: accessToken },
-          "Sucessfully logged in"
-        )
-      );
+    // collect device info and fingerprint hash
+    const currentDevice = await createDeviceFingerprint(req);
+
+    // find the previous loggedin devices info
+    const fingerprint = await DeviceFingerprint.findOne({ userId: logginedUser._id, fingerprint: currentDevice.fingerprint });
+
+    // Save and send an alert for login from unrecognized device, if device fingerprint not found
+    if (!fingerprint) Promise.allSettled([
+      DeviceFingerprint.create({ userId: logginedUser._id, ...currentDevice }),
+      emailOnEvent.newLogin(logginedUser, fingerprint)
+    ]);
+
   } catch (error) {
     next(error);
   }
