@@ -4,7 +4,6 @@ import jwt from "jsonwebtoken";
 import { ACCESS_TOKEN_EXPIRY, ACCESS_TOKEN_SECRET } from "../config/env.js";
 
 import crypto from "crypto";
-import DeviceFingerprint from "../app/models/device.fingerprint.model.js";
 
 const userSchema = new mongoose.Schema(
   {
