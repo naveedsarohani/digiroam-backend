@@ -83,7 +83,6 @@ export {
   ACCESS_CODE,
 };
 
-
 // managed by Naveed Sarohani (naveed.sarohani@gmail.com)
 export const server = {
   origin: process.env.SERVER_ORIGIN,
@@ -91,7 +90,15 @@ export const server = {
 }
 
 export const application = {
-  supportEmail: process.env.APP_SUPPORT_EMAIL
+  supportEmail: process.env.APP_SUPPORT_EMAIL,
+  developer: {
+    developer: {
+      name: "Naveed Sarohani",
+      email: "naveed.sarohani@gmail.com",
+      position: "Back End Developer @ iCreativez",
+      linkedIn: "https://linkedin.com/in/naveedsarohani"
+    }
+  }
 }
 
 export const database = {

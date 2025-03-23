@@ -166,7 +166,7 @@ const orderUsage = async (user) => {
     } catch (error) {
         throw error;
     }
-}
+};
 
 const orderValidity = async (content, user) => {
     try {
@@ -196,7 +196,7 @@ const orderValidity = async (content, user) => {
     } catch (error) {
         throw error;
     }
-}
+};
 
 const orderExpired = async (user) => {
     try {
@@ -224,7 +224,7 @@ const orderExpired = async (user) => {
     } catch (error) {
         throw error;
     }
-}
+};
 
 // eSim email alerts
 export const retrieveProfiles = async ({ orderNo = null, iccid = null }) => {

@@ -30,6 +30,7 @@ const userSchema = new mongoose.Schema(
     accountType: {
       type: Number,
       required: true,
+      enum: [1, 2], // 2 for admin account
       default: 1
     },
     balance: {
@@ -39,6 +40,8 @@ const userSchema = new mongoose.Schema(
     userRole: {
       type: Number,
       required: true,
+      enum: [1, 2], // 2 for admin account
+      default: 1
     },
     isSocialUser: {
       type: Boolean,

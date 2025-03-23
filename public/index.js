@@ -11,7 +11,7 @@ import rateLimit from "express-rate-limit";
 import errorHandler from "../src/app/middlewares/error.handler.js";
 import response from "../src/app/middlewares/response.js";
 import database from "../src/config/database.js";
-import { server } from "../src/config/env.js";
+import { application, server } from "../src/config/env.js";
 import apiRoutes from "../src/app.js";
 import {
     initializeAppleStrategy,
@@ -38,7 +38,7 @@ app.use(cookieParser()); // Cookie parsing middleware
 app.use(response);
 app.use(errorHandler);
 app.use(rateLimit({
-    windowMs: 10 * 60 * 1000, // 15 minutes
+    windowMs: 10 * 60 * 1000, // 10 minutes
     max: 80, // Limit each IP to 100 requests per `window`
     standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
     legacyHeaders: false, // Disable the `X-RateLimit-*` headers
@@ -47,14 +47,7 @@ app.use(rateLimit({
 
 // root route
 app.get("/", (_, res) => {
-    res.response(200, "Backend is up and fine!", {
-        developer: {
-            name: "Naveed Sarohani",
-            email: "naveed.sarohani@gmail.com",
-            position: "Back End Developer @ iCreativez",
-            linkedIn: "https://linkedin.com/in/naveedsarohani"
-        }
-    });
+    res.response(200, "Backend is up and fine!", { developer: application.developer });
 });
 
 // api routes

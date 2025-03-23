@@ -5,7 +5,7 @@ const otpVerificationSchema = new mongoose.Schema(
     email: {
       type: String,
       required: true,
-      unique: false, 
+      unique: false,
       trim: true,
     },
     otp: {
@@ -16,7 +16,6 @@ const otpVerificationSchema = new mongoose.Schema(
       type: Date,
       required: true,
     }
-    
   },
 );
 

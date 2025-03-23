@@ -7,16 +7,16 @@ import { auth } from "../middeware/auth.js";
 const userRoutes = Router({ mergeParams: true });
 
 userRoutes.get("/",
-    userController.index
+    auth, userController.index
 );
 userRoutes.get("/:userId",
-    userController.show
+    auth, userController.show
 );
-userRoutes.post("/",
-    validate(userSchema.create), userController.create
-);
-userRoutes.delete("/:userId",
-    userController.delete
-);
+// userRoutes.post("/",
+//     validate(userSchema.create), userController.create
+// );
+// userRoutes.delete("/:userId",
+//     auth, userController.delete
+// );
 
 export default userRoutes;

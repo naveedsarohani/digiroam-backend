@@ -27,11 +27,11 @@ apiRoutes.use("/otp-verification", otpVerificationRoute);
 apiRoutes.use("/eSim", eSimRoute);
 apiRoutes.use("/payment", paymentGatewayRoutes);
 apiRoutes.use("/cart", cartRoute);
-apiRoutes.use("/paymentSave", paymentRoutes)
-apiRoutes.use("/users", userRoutes)
-apiRoutes.use("/email", emailRoutes)
-apiRoutes.use("/email-templates", emailTemplateRoutes)
-apiRoutes.use("/settings", settingRoutes)
+apiRoutes.use("/paymentSave", paymentRoutes);
+apiRoutes.use("/users", userRoutes);
+apiRoutes.use("/email", emailRoutes);
+apiRoutes.use("/email-templates", emailTemplateRoutes);
+apiRoutes.use("/settings", settingRoutes);
 
 // export to register
 export default apiRoutes;

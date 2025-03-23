@@ -5,13 +5,12 @@ const countrySchema = new mongoose.Schema({
         type: String,
         required: true,
         unique: true,
-        index:true
+        index: true
     },
-  
     dialingCode: {
         type: String,
         required: true,
-    
+
     },
     currency: {
         type: String,
