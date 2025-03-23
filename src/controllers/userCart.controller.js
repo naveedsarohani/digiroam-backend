@@ -4,8 +4,6 @@ import Cart from "../app/models/cart.model.js";
 const getCartDetails = async (req, res) => {
     try {
         const cart = await Cart.findOne({ userId: req.user._id });
-
-
         if (!cart) return res.status(404).json({ message: 'Cart not found' });
         res.status(200).json({ success: true, message: "get all Cart", cart });
     }

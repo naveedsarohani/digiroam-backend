@@ -17,7 +17,6 @@ const store = async (req, res) => {
         if (!payment) return res.response(400, "Failed to save payment details");
 
         await Cart.findOneAndDelete({ userId: req.user._id });
-        // await emailOnEvent.orderPurchase(data.orderNo, req.user);
 
         return res.response(201, "Payment stored successfully, and cart cleared");
     } catch (error) {
@@ -44,9 +43,7 @@ const webHook = async (req, res) => {
 
         switch (notifyType) {
             case "ORDER_STATUS":
-                await emailOnEvent.orderPurchase(orderNo, payment.userId);
-                // await sendOrderEmail(orderNo, { name: "Naveed Sarohani", email: "naveed.sarohani@gmail.com" })
-                break;
+                await emailOnEvent.orderPurchase(orderNo, payment.userId); break;
 
             case "ESIM_STATUS":
                 if (esimStatus === "CANCEL" || smdpStatus === "RELEASED") {

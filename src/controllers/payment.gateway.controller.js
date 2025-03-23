@@ -109,10 +109,10 @@ const payapalcaptureOrder = async (req, res, next) => {
     const packageInfoList = cart.items.map((item) => ({
       packageCode: item.productId,
       count: item.productQuantity,
-      price: item.productPrice * 1000,
+      price: item.productPrice * 10000,
     }));
 
-    const totalAmount = cart.totalPrice * 1000;
+    const totalAmount = cart.totalPrice * 10000;
 
     res.json({
       success: true,
