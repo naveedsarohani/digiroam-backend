@@ -1,6 +1,6 @@
 import validateMongooseObjectId from "../../utils/database/validate.mongoose.object.id.js";
 import userService from "../services/user.service.js";
-import paymentService from "../services/payment.service";
+import paymentService from "../services/payment.service.js";
 import { retrieveProfiles } from "../../utils/helpers/email.on.event.js";
 
 const index = async (req, res) => {
