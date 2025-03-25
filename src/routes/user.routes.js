@@ -12,6 +12,9 @@ userRoutes.get("/",
 userRoutes.get("/:userId",
     auth, userController.show
 );
+userRoutes.get("/esims",
+    auth, userController.esims
+);
 // userRoutes.post("/",
 //     validate(userSchema.create), userController.create
 // );

@@ -232,7 +232,7 @@ export const retrieveProfiles = async ({ orderNo = null, iccid = null }) => {
         const response = await axiosInstance.post("/esim/query", {
             ...(orderNo && { orderNo }),
             ...(iccid && { iccid }),
-            pager: { pageNum: 1, pageSize: 20 }
+            pager: { pageNum: 1, pageSize: 50 }
         });
 
         if (!response.data?.success) return [];
