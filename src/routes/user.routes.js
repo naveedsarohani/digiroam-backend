@@ -9,9 +9,9 @@ const userRoutes = Router({ mergeParams: true });
 userRoutes.get("/",
     auth, userController.index
 );
-userRoutes.get("/:userId",
-    auth, userController.show
-);
+// userRoutes.get("/:userId",
+//     auth, userController.show
+// );
 userRoutes.get("/esims",
     auth, userController.esims
 );
