@@ -5,6 +5,23 @@ const SettingSchema = new mongoose.Schema(
         pricePercentage: {
             type: Number,
             required: true
+        },
+        serviceLinks: {
+            type: [{
+                label: { type: String, required: true },
+                href: { type: String, required: true },
+                isHidden: { type: Boolean, default: false }
+            }],
+            default: []
+        },
+        contactlist: {
+            type: [{
+                field: { type: String, required: true },
+                label: { type: String, required: true },
+                value: { type: String, required: true },
+                isHidden: { type: Boolean, default: false }
+            }],
+            default: []
         }
     },
     {
@@ -17,7 +34,11 @@ Setting.on('index', ensureDefaultSetting);
 
 async function ensureDefaultSetting() {
     const count = await Setting.countDocuments();
-    if (count === 0) await Setting.create({ pricePercentage: 10 });
+    if (count === 0) await Setting.create({
+        pricePercentage: 10,
+        serviceLinks: [],
+        contactlist: []
+    });
 }
 
 export default Setting;

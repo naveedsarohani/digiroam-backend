@@ -7,7 +7,7 @@ import settingSchema from "../schemas/setting.schema.js";
 const settingRoutes = Router({ mergeParams: true });
 
 settingRoutes.get("/",
-    auth, settingController.read
+    settingController.read
 );
 settingRoutes.patch("/",
     auth, validate(settingSchema.update), settingController.update

@@ -14,7 +14,6 @@ const getDataPackagesList = async (req, res, next) => {
     };
 
     const body = req.body;
-    console.log("This is req.body " + req.body)
     const dataPackages = await axios.post(
       GET_DATA_PACKAGES_URL,
       body,
