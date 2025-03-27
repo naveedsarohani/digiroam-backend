@@ -26,7 +26,8 @@ const store = async (req, res) => {
 
 const payments = async (req, res) => {
     try {
-        const myPayments = await paymentService.retrieveMany({ userId: req.user._id });
+        const query = req.user.accountType === 1 ? { userId: req.user._id } : {};
+        const myPayments = await paymentService.retrieveMany(query);
         return res.response(200, "Retrieved all your payments", { myPayments });
     } catch (error) {
         return res.response(400, "Failed to retrieve your payments", { error: error.message });

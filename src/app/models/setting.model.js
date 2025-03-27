@@ -35,7 +35,7 @@ Setting.on('index', ensureDefaultSetting);
 async function ensureDefaultSetting() {
     const count = await Setting.countDocuments();
     if (count === 0) await Setting.create({
-        pricePercentage: 10,
+        pricePercentage: 1,
         serviceLinks: [],
         contactlist: []
     });
