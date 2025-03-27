@@ -14,7 +14,7 @@ const SettingSchema = new mongoose.Schema(
             }],
             default: []
         },
-        contactlist: {
+        contactList: {
             type: [{
                 field: { type: String, required: true },
                 label: { type: String, required: true },

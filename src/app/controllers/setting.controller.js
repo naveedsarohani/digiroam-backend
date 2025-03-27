@@ -37,9 +37,9 @@ const update = async (req, res) => {
 
         // update or add contactlist only if contact is provided
         if (contact) {
-            const contactlist = currentSettings.contactlist.some(c => c.field === contact.field)
-                ? currentSettings.contactlist.map(c => (c.field === contact.field ? contact : c))
-                : [...currentSettings.contactlist, contact];
+            const contactlist = currentSettings.contactList.some(c => c.field === contact.field)
+                ? currentSettings.contactList.map(c => (c.field === contact.field ? contact : c))
+                : [...currentSettings.contactList, contact];
 
             updatedData.contactlist = contactlist;
         }
