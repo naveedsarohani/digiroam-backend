@@ -18,7 +18,7 @@ const SettingSchema = new mongoose.Schema(
             type: [{
                 field: { type: String, required: true },
                 label: { type: String, required: true },
-                value: { type: String, required: true },
+                href: { type: String, default: null },
                 isHidden: { type: Boolean, default: false }
             }],
             default: []

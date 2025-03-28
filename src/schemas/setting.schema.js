@@ -28,8 +28,7 @@ const update = Joi.object({
             "any.required": "Contact field label is required",
             "string.base": "Contact field label must be a string",
         }),
-        value: Joi.string().required().messages({
-            "any.required": "Contact value is required",
+        href: Joi.string().optional().messages({
             "string.base": "Contact value must be a string",
         }),
         isHidden: Joi.boolean().optional().messages({

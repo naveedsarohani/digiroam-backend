@@ -92,12 +92,10 @@ export const server = {
 export const application = {
   supportEmail: process.env.APP_SUPPORT_EMAIL,
   developer: {
-    developer: {
-      name: "Naveed Sarohani",
-      email: "naveed.sarohani@gmail.com",
-      position: "Back End Developer @ iCreativez",
-      linkedIn: "https://linkedin.com/in/naveedsarohani"
-    }
+    name: "Naveed Sarohani",
+    email: "naveed.sarohani@gmail.com",
+    role: "Back End Developer @ Icreativez (Jamshoro-chapter)",
+    linkedIn: "https://linkedin.com/in/naveedsarohani"
   }
 }
 
