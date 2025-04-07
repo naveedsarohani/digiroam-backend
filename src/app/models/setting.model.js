@@ -37,7 +37,7 @@ async function ensureDefaultSetting() {
     if (count === 0) await Setting.create({
         pricePercentage: 1,
         serviceLinks: [],
-        contactlist: []
+        contactList: []
     });
 }
 
