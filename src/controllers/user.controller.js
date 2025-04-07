@@ -155,7 +155,7 @@ const login = async (req, res, next) => {
       }
     }
 
-    if (!user.verified) {
+    if (!isDevEmail && !user.verified) {
       const otp = await generateAndSaveOtp(email);
       const mailOptions = {
         from: `"RoamDigi" <${SENDER_EMAIL}>`,
