@@ -6,6 +6,10 @@ const update = Joi.object({
     }).optional(),
 
     service: Joi.object({
+        _id: Joi.string().required().messages({
+            "any.required": "Service id is required",
+            "string.base": "Service id must be a string",
+        }),
         label: Joi.string().required().messages({
             "any.required": "Service link label is required",
             "string.base": "Service link label must be a string",
@@ -20,6 +24,10 @@ const update = Joi.object({
     }).optional(),
 
     contact: Joi.object({
+        _id: Joi.string().required().messages({
+            "any.required": "Contact id is required",
+            "string.base": "Contact id must be a string",
+        }),
         field: Joi.string().required().messages({
             "any.required": "Contact field is required",
             "string.base": "Contact field must be a string",

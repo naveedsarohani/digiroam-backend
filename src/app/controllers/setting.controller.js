@@ -28,8 +28,8 @@ const update = async (req, res) => {
 
         // update or add serviceLinks only if service is provided
         if (service) {
-            const serviceLinks = currentSettings.serviceLinks.some(s => s.label === service.label)
-                ? currentSettings.serviceLinks.map(s => (s.label === service.label ? service : s))
+            const serviceLinks = currentSettings.serviceLinks.some(s => s._id.equals(service._id))
+                ? currentSettings.serviceLinks.map(s => s._id.equals(service._id) ? service : s)
                 : [...currentSettings.serviceLinks, service];
 
             updatedData.serviceLinks = serviceLinks;
@@ -37,9 +37,8 @@ const update = async (req, res) => {
 
         // update or add contactList only if contact is provided
         if (contact) {
-            console.log(contact);
-            const contactList = currentSettings.contactList.some(c => c.field === contact.field)
-                ? currentSettings.contactList.map(c => (c.field === contact.field ? contact : c))
+            const contactList = currentSettings.contactList.some(c => c._id.equals(contact._id))
+                ? currentSettings.contactList.map(c => c._id.equals(contact._id) ? contact : c)
                 : [...currentSettings.contactList, contact];
 
             updatedData.contactList = contactList;
@@ -50,7 +49,6 @@ const update = async (req, res) => {
             return res.response(400, "No valid fields provided for update");
         }
 
-        console.log(currentSettings);
         // service method to update the document
         const settings = await settingService.update(updatedData);
         if (!settings) throw new Error("Failed to save the changes");
