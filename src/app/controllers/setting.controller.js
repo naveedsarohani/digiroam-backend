@@ -28,7 +28,7 @@ const update = async (req, res) => {
 
         // update or add serviceLinks only if service is provided
         if (service) {
-            const serviceLinks = currentSettings.serviceLinks.some(s => s._id.equals(service._id))
+            const serviceLinks = currentSettings.serviceLinks.some(s => s._id.equals(service?._id))
                 ? currentSettings.serviceLinks.map(s => s._id.equals(service._id) ? service : s)
                 : [...currentSettings.serviceLinks, service];
 
@@ -37,7 +37,7 @@ const update = async (req, res) => {
 
         // update or add contactList only if contact is provided
         if (contact) {
-            const contactList = currentSettings.contactList.some(c => c._id.equals(contact._id))
+            const contactList = currentSettings.contactList.some(c => c._id.equals(contact?._id))
                 ? currentSettings.contactList.map(c => c._id.equals(contact._id) ? contact : c)
                 : [...currentSettings.contactList, contact];
 
