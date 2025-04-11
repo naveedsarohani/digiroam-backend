@@ -11,4 +11,4 @@ const upsert = Joi.object({
     }),
 });
 
-export default { upsert, remove };
+export default { upsert };
