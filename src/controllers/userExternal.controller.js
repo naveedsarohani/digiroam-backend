@@ -21,7 +21,6 @@ const getDataPackagesList = async (req, res, next) => {
         headers,
       }
     );
-    console.log(dataPackages)
     if (dataPackages.data?.success === false) {
       const errCode = dataPackages.data.errorCode;
       const errMessage = dataPackages.data.errorMsg;

@@ -7,7 +7,7 @@ import favouritePlansSchema from "../schemas/favourite.plans.schema.js";
 const FavouritePlanRoutes = Router({ mergeParams: true });
 
 FavouritePlanRoutes.get("/",
-   favouritePlanController.index
+    auth, favouritePlanController.index
 );
 
 FavouritePlanRoutes.post("/",
