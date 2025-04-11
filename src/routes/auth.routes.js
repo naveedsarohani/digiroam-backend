@@ -38,8 +38,6 @@ authRoute.get(
           )}}`
         );
     } catch (error) {
-      console.error("Error during Google callback:", error);
-
       res.redirect(
         `${ORIGIN}/login?error=${encodeURIComponent(error.message)}`
       );

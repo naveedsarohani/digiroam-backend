@@ -1,8 +1,7 @@
 import { User } from "../models/user.model.js";
 import { Strategy as FacebookStrategy } from "passport-facebook";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
-import {Strategy as AppleStrategy} from "passport-apple"
-import fs from "fs"
+import { Strategy as AppleStrategy } from "passport-apple"
 import path from "path"
 import { fileURLToPath } from "url";
 
@@ -111,10 +110,10 @@ export const initializeAppleStrategy = (passport) => {
   passport.use(
     new AppleStrategy(
       {
-        clientID: "com.roamdigi.si", // Replace with your Service ID
-        teamID: "4PAJC5AVN9",       // Replace with your Team ID
-        keyID: "RDFVK4AR7N",        // Replace with your Key ID
-        privateKeyLocation: privateKeyLocation, // Path to your private key
+        clientID: "com.roamdigi.si",
+        teamID: "4PAJC5AVN9",
+        keyID: "RDFVK4AR7N",
+        privateKeyLocation: privateKeyLocation,
         callbackURL: "https://dev.roamdigi.com/api/auth/apple/callback",
       },
       async (accessToken, refreshToken, idToken, profile, done) => {
@@ -144,7 +143,6 @@ export const initializeAppleStrategy = (passport) => {
 
           done(null, newUser);
         } catch (error) {
-          console.error("Error in Apple Strategy:", error);
           return done(error, null);
         }
       }
