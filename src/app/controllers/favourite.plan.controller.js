@@ -4,26 +4,26 @@ import favouritePlanService from "../services/favourite.plan.service.js";
 
 const index = async (req, res) => {
     try {
-        const response = await axiosInstance.post("package/list");
+        const response = await axiosInstance.post("package/list", {
+            iccid: "", locationCode: "", slug: "", packageCode: "",
+        });
 
         if (response.data?.success === false) {
             return res.response(
-                response.data.errorCode ?? 500,
+                Number(response.data.errorCode ?? 500),
                 response.data.errorMsg ?? "Something went wrong"
             );
         }
 
         const priceSettled = dataPackagesResponse(response.data.obj);
         const favouritePlans = await favouritePlanService.retrieve(req.user._id);
-
         if (!favouritePlans) {
             return res.response(200, "Your favourite plan list", { plans: [] });
         }
 
         const userFavouritePlanList = [];
-
-        for (const plan of priceSettled.packageList) {
-            for (const fav of favouritePlans.plans) {
+        for (const plan of priceSettled?.packageList ?? {}) {
+            for (const fav of favouritePlans?.plans ?? {}) {
                 if (
                     plan.packageCode === fav.packageCode &&
                     plan.slug === fav.slug
@@ -34,11 +34,15 @@ const index = async (req, res) => {
             }
         }
 
-        return res.response(200, "All your favourite plans", { plans: userFavouritePlanList });
+        return res.response(200, "All your favourite plans", {
+            plans: userFavouritePlanList,
+        });
+
     } catch (error) {
         return res.response(500, "Error retrieving favourite plans", {
             error: error.message,
         });
+
     }
 };
 
