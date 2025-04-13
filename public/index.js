@@ -19,51 +19,113 @@ import {
     initializeGoogleStrategy,
 } from "../src/controllers/auth.controller.js";
 
-const app = express();
+// Load env variables
 dotenv.config({ path: "../src/config/env.js" });
 
-initializeFacebookStrategy(passport);
-initializeGoogleStrategy(passport);
-initializeAppleStrategy(passport)
+// Initialize Express app
+const app = express();
 
-// application-level middlewares
-app.use(passport.initialize());
-app.use(cors({ origin: ["http://localhost:5173", "https://roamdigi.com"], credentials: true, }));
-app.use(express.json({ limit: "16kb" }));
-app.use(express.urlencoded({ extended: true, limit: "16kb" }));
-app.use(helmet()); // Security middleware
-app.use(compression()); // Gzip compression
-app.use(morgan("dev")); // Logging middleware
-app.use(cookieParser()); // Cookie parsing middleware
-app.use(response);
-app.use(errorHandler);
-app.use(rateLimit({
-    windowMs: 10 * 60 * 1000, // 10 minutes
-    max: 80, // Limit each IP to 100 requests per `window`
-    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-    message: "Too many requests, Please try again later.",
+// ----------------------
+// ✅ CORS CONFIGURATION
+// ----------------------
+const allowedOrigins = ["https://roamdigi.com", "http://localhost:5173"];
+
+app.use(cors({
+    origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps or curl)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        } else {
+            return callback(new Error("Not allowed by CORS"));
+        }
+    },
+    credentials: true,
 }));
 
-// root route
+// ✅ Handle preflight requests for all routes
+app.options("*", cors({
+    origin: allowedOrigins,
+    credentials: true,
+}));
+
+// ----------------------
+// ✅ Security & Utility Middlewares
+// ----------------------
+app.use(helmet());
+app.use(compression());
+app.use(morgan("dev"));
+app.use(express.json({ limit: "16kb" }));
+app.use(express.urlencoded({ extended: true, limit: "16kb" }));
+app.use(cookieParser());
+
+// ----------------------
+// ✅ Passport Strategies
+// ----------------------
+app.use(passport.initialize());
+initializeFacebookStrategy(passport);
+initializeGoogleStrategy(passport);
+initializeAppleStrategy(passport);
+
+// ----------------------
+// ✅ Global Middleware: Response Wrapper
+// ----------------------
+app.use(response);
+
+// ----------------------
+// ✅ Rate Limiting
+// ----------------------
+app.use(rateLimit({
+    windowMs: 10 * 60 * 1000, // 10 minutes
+    max: 80,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: "Too many requests, please try again later.",
+}));
+
+// ----------------------
+// ✅ Debug Logging for Origins (for CORS debugging)
+app.use((req, res, next) => {
+    console.log("Incoming Origin:", req.headers.origin);
+    next();
+});
+
+// ----------------------
+// ✅ Root Route
+// ----------------------
 app.get("/", (_, res) => {
     res.response(200, "Backend is up and fine!", { developer: application.developer });
 });
 
-// api routes
+// ----------------------
+// ✅ API Routes
+// ----------------------
 app.use("/api", apiRoutes);
 
-// app listener
-database.connect().then(() => {
-    app.listen(server.port, () => {
-        console.log(`The server has started at [http://127.0.0.1:${server.port}]`);
+// ----------------------
+// ✅ Global Error Handler (with CORS headers)
+// ----------------------
+app.use((err, req, res, next) => {
+    console.error("Global Error:", err.stack);
+
+    res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "*");
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+
+    res.status(err.status || 500).json({
+        success: false,
+        message: err.message || "Internal Server Error",
     });
-}).catch((error) => {
-    console.error('An error occurred while starting the server: ', error);
 });
 
-// error handling middleware (generic error handler)
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.response(err.status ? err.status : err.statusCode, err.message);
-});
+// ----------------------
+// ✅ Start Server (After DB Connection)
+// ----------------------
+database.connect()
+    .then(() => {
+        app.listen(server.port, () => {
+            console.log(`✅ Server running at http://127.0.0.1:${server.port}`);
+        });
+    })
+    .catch((error) => {
+        console.error("❌ Failed to connect to DB or start server:", error);
+    });
