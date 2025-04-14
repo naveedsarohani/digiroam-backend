@@ -72,17 +72,9 @@ userSchema.methods.isPasswordCorrect = async function (password) {
 };
 
 userSchema.methods.generateAccessToken = function () {
-  return jwt.sign(
-    {
-      _id: this._id,
-      name: this.name,
-      email: this.email,
-    },
-    application.secretKey,
-    {
-      expiresIn: ACCESS_TOKEN_EXPIRY,
-    }
-  );
+  return jwt.sign({ _id: this._id, }, application.secretKey, {
+    expiresIn: ACCESS_TOKEN_EXPIRY,
+  });
 };
 
 userSchema.methods.generateHashedPassword = function () {
