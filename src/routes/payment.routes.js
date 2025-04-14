@@ -2,7 +2,7 @@ import { Router } from "express";
 import paymentController from "../app/controllers/payment.controller.js";
 import { validate } from "../middeware/validation.js";
 import paymentSchema from "../schemas/payment.schema.js"
-import { auth } from "../middeware/a.js";
+import { auth } from "../middeware/auth.js";
 
 const paymentRoutes = Router({ mergeParams: true });
 

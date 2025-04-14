@@ -13,7 +13,7 @@ import {
   verifyOtp,
   verifyToken,
 } from "../controllers/user.controller.js";
-import { auth } from "../middeware/a.js";
+import { auth } from "../middeware/auth.js";
 import { validate } from "../middeware/validation.js";
 import {
   loginSchema,

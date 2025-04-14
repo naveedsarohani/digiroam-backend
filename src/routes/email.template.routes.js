@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { auth } from "../middeware/a.js";
+import { auth } from "../middeware/auth.js";
 import { validate } from "../middeware/validation.js";
 
 import emailTemplateController from "../app/controllers/email.template.controller.js";

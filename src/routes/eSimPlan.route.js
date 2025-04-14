@@ -9,7 +9,7 @@ import {
   eSimPlancreateSchema,
   updateESimPlanSchema,
 } from "../validators/eSimPlan.validator.js";
-import { auth } from "../middeware/a.js";
+import { auth } from "../middeware/auth.js";
 
 const eSimPlanRoute = Router();
 
