@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { ACCESS_TOKEN_EXPIRY, ACCESS_TOKEN_SECRET, application } from "../config/env.js";
+import { ACCESS_TOKEN_EXPIRY, ACCESS_TOKEN_SECRET } from "../config/env.js";
 
 import crypto from "crypto";
 
@@ -72,9 +72,17 @@ userSchema.methods.isPasswordCorrect = async function (password) {
 };
 
 userSchema.methods.generateAccessToken = function () {
-  return jwt.sign({ _id: this._id, }, ACCESS_TOKEN_SECRET, {
-    expiresIn: ACCESS_TOKEN_EXPIRY,
-  });
+  return jwt.sign(
+    {
+      _id: this._id,
+      name: this.name,
+      email: this.email,
+    },
+    ACCESS_TOKEN_SECRET,
+    {
+      expiresIn: ACCESS_TOKEN_EXPIRY,
+    }
+  );
 };
 
 userSchema.methods.generateHashedPassword = function () {
