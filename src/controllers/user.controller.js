@@ -181,8 +181,7 @@ const login = async (req, res, next) => {
     //   path: "/", httpOnly: true, sameSite: "None", secure: true,
     // }).json(new ApiResponse(200, { user: logginedUser, accessToken: accessToken }, "Sucessfully logged in"));
 
-    res.status(200).json(new ApiResponse(200, { user: logginedUser, accessToken: accessToken }, "Sucessfully logged in"));
-
+    return res.response(200, "Login successfully", { user: logginedUser, accessToken: accessToken });
   } catch (error) {
     next(error);
   }
