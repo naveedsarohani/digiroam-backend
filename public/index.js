@@ -26,30 +26,14 @@ initializeFacebookStrategy(passport);
 initializeGoogleStrategy(passport);
 initializeAppleStrategy(passport)
 
-// application-level middlewares
-app.use(cors({
-    origin: function (origin, callback) {
-        const allowedOrigins = [
-            "http://localhost:5173",
-            "https://roamdigi.com"
-        ];
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error("Not allowed by CORS"));
-        }
-    },
-    credentials: true,
-    methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
-    allowedHeaders: "Content-Type,Authorization",
-}));
+app.use(cors({ origin: ["http://localhost:5173", "https://roamdigi.com"], credentials: true })); // Enable CORS for specific origins;
 app.use(passport.initialize());
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(helmet()); // Security middleware
 app.use(compression()); // Gzip compression
 app.use(morgan("dev")); // Logging middleware
-app.use(cookieParser()); // Cookie parsing middleware
+// app.use(cookieParser()); // Cookie parsing middleware
 app.use(response);
 app.use(errorHandler);
 // app.use(rateLimit({

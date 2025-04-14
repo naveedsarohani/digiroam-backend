@@ -177,9 +177,11 @@ const login = async (req, res, next) => {
     // login alert email
     emailOnEvent.newLogin(logginedUser);
 
-    res.status(200).cookie("accessToken", accessToken, {
-      path: "/", httpOnly: true, sameSite: "None", secure: true,
-    }).json(new ApiResponse(200, { user: logginedUser, accessToken: accessToken }, "Sucessfully logged in"));
+    // res.status(200).cookie("accessToken", accessToken, {
+    //   path: "/", httpOnly: true, sameSite: "None", secure: true,
+    // }).json(new ApiResponse(200, { user: logginedUser, accessToken: accessToken }, "Sucessfully logged in"));
+
+    res.status(200).json(new ApiResponse(200, { user: logginedUser, accessToken: accessToken }, "Sucessfully logged in"));
 
   } catch (error) {
     next(error);

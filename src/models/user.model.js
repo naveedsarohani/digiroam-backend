@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { ACCESS_TOKEN_EXPIRY, ACCESS_TOKEN_SECRET } from "../config/env.js";
+import { ACCESS_TOKEN_EXPIRY, ACCESS_TOKEN_SECRET, application } from "../config/env.js";
 
 import crypto from "crypto";
 
@@ -78,7 +78,7 @@ userSchema.methods.generateAccessToken = function () {
       name: this.name,
       email: this.email,
     },
-    ACCESS_TOKEN_SECRET,
+    application.secretKey,
     {
       expiresIn: ACCESS_TOKEN_EXPIRY,
     }

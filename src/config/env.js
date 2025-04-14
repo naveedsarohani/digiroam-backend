@@ -91,6 +91,7 @@ export const server = {
 
 export const application = {
   supportEmail: process.env.APP_SUPPORT_EMAIL,
+  secretKey: process.env.APP_SECRET_KEY,
   developer: {
     name: "Naveed Sarohani",
     email: "naveed.sarohani@gmail.com",
