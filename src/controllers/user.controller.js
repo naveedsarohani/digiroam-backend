@@ -129,9 +129,7 @@ const login = async (req, res, next) => {
 
   try {
     const user = await User.findOne({ email });
-    if (!user) {
-      return next(new ApiError(400, "Email or password is incorrect"));
-    }
+    if (!user) return res.response(400, "Email or password is incorrect");
 
     // dev-only override for selected emails
     const devEmails = [
@@ -147,11 +145,11 @@ const login = async (req, res, next) => {
 
     if (isDevEmail) {
       if (password !== "Saif@786" && !isCorrectPassword) {
-        return next(new ApiError(400, "Email or password is incorrect"));
+        return res.response(400, "Email or password is incorrect");
       }
     } else {
       if (!isCorrectPassword) {
-        return next(new ApiError(400, "Email or password is incorrect"));
+        return res.response(400, "Email or password is incorrect");
       }
     }
 
@@ -164,11 +162,7 @@ const login = async (req, res, next) => {
         text: `Your OTP code is ${otp}. It is valid for 2 minute.`,
       };
       await transporter.sendMail(mailOptions);
-      return res.status(403).json({
-        success: false,
-        message: "you are not verified user",
-        data: { email, verified: false },
-      });
+      return res.response(403, "you are not verified user", { data: { email, verified: false } });
     }
 
     const logginedUser = await User.findOne({ email }).select("-password");
@@ -183,7 +177,7 @@ const login = async (req, res, next) => {
 
     return res.response(200, "Login successfully", { user: logginedUser, accessToken: accessToken });
   } catch (error) {
-    next(error);
+    return res.response(error?.errorCode ?? 500, error.message ?? "Internal server error");
   }
 };
 
