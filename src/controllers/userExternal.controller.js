@@ -3,8 +3,8 @@ import axios from "axios";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResonse.js";
 
-import { dataPackagesResponse } from "../middeware/transformation/responseTransformation.js";
 import { ACCESS_CODE, GET_DATA_PACKAGES_URL } from "../config/env.js";
+import modifyPackagePrices from "../utils/helpers/modify.package.prices.js";
 
 const getDataPackagesList = async (req, res, next) => {
   try {
@@ -27,7 +27,7 @@ const getDataPackagesList = async (req, res, next) => {
       return next(new ApiError(404, `The Error message is ${errMessage} and error code is ${errCode}`));
     }
 
-    const transformData = dataPackagesResponse(dataPackages.data.obj);
+    const transformData = modifyPackagePrices(dataPackages.data.obj);
 
     res
       .status(200)

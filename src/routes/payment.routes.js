@@ -1,19 +1,26 @@
 import { Router } from "express";
+
+import auth from "../app/middlewares/auth.js";
+import schema from "../app/middlewares/schema.js";
 import paymentController from "../app/controllers/payment.controller.js";
-import { validate } from "../middeware/validation.js";
 import paymentSchema from "../schemas/payment.schema.js"
-import { auth } from "../middeware/auth.js";
 
 const paymentRoutes = Router({ mergeParams: true });
 
 paymentRoutes.post('/store',
-    auth, validate(paymentSchema.store), paymentController.store
+    auth.authenticate,
+    schema.validator(paymentSchema.store),
+    paymentController.store
 );
+
 paymentRoutes.get("/getMyPaymentInfo",
-    auth, paymentController.payments
+    auth.authenticate,
+    paymentController.payments
 );
+
 paymentRoutes.post("/webhook/notifications",
-    validate(paymentSchema.webhook), paymentController.webHook
+    schema.validator(paymentSchema.webhook),
+    paymentController.webHook
 );
 
 export default paymentRoutes;

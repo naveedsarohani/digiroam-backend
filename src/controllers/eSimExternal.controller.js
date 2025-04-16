@@ -4,7 +4,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResonse.js";
 
 import { configDotenv } from "dotenv";
-import { dataPackagesResponse } from "../middeware/transformation/responseTransformation.js";
+import modifyPackagePrices from "../utils/helpers/modify.package.prices.js";
 
 configDotenv();
 
@@ -31,7 +31,7 @@ const getDataPackages = async (req, res, next) => {
       return next(new ApiError(404, errCode, errMessage));
     }
 
-    const transformData = dataPackagesResponse(dataPackages.data.obj);
+    const transformData = modifyPackagePrices(dataPackages.data.obj);
 
     res
       .status(200)

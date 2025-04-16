@@ -13,8 +13,10 @@ import {
   verifyOtp,
   verifyToken,
 } from "../controllers/user.controller.js";
-import { auth } from "../middeware/auth.js";
-import { validate } from "../middeware/validation.js";
+
+import auth from "../app/middlewares/auth.js";
+import schema from "../app/middlewares/schema.js";
+
 import {
   loginSchema,
   createUserAndSendOtpSchema,
@@ -26,35 +28,35 @@ import {
 } from "../validators/user.validator.js";
 import { getDataPackagesList } from "../controllers/userExternal.controller.js";
 
-const userRoute = Router();
+const userRoute = Router({ mergeParams: true });
 
 userRoute
   .route("/createUserAndSendOtp")
-  .post(validate(createUserAndSendOtpSchema), CreateUserAndSendOtp);
-userRoute.route("/login").post(validate(loginSchema), login);
-userRoute.route("/logout").post(auth, logout);
-userRoute.route("/getMyProfile").get(auth, getMyProfile);
+  .post(schema.validator(createUserAndSendOtpSchema), CreateUserAndSendOtp);
+userRoute.route("/login").post(schema.validator(loginSchema), login);
+userRoute.route("/logout").post(auth.authenticate, logout);
+userRoute.route("/getMyProfile").get(auth.authenticate, getMyProfile);
 userRoute
   .route("/updateProfile")
-  .put(validate(updateProfileSchema), auth, updateMyProfile);
-userRoute.route("/verifyOtp").post(validate(verifyOtpSchema), verifyOtp);
-userRoute.route("/verify-token").post(auth, verifyToken);
+  .put(schema.validator(updateProfileSchema), auth.authenticate, updateMyProfile);
+userRoute.route("/verifyOtp").post(schema.validator(verifyOtpSchema), verifyOtp);
+userRoute.route("/verify-token").post(auth.authenticate, verifyToken);
 
 userRoute
   .route("/forgot-password")
-  .post(validate(forgotPasswordRequestSchema), forgotPasswordRequest);
+  .post(schema.validator(forgotPasswordRequestSchema), forgotPasswordRequest);
 
 userRoute
   .route("/verifyForgotPasswordOtpVerification")
   .post(
-    validate(verifyForgotPassOtpVerificationSchema),
+    schema.validator(verifyForgotPassOtpVerificationSchema),
     forgotPasswordOtpVerification
   );
 
 userRoute
   .route("/change-password")
-  .post(validate(changeCurrentPasswordSchema), auth, changeCurrentPassword);
-userRoute.route("/assignRole/:userId").post(auth, assignRole);
+  .post(schema.validator(changeCurrentPasswordSchema), auth.authenticate, changeCurrentPassword);
+userRoute.route("/assignRole/:userId").post(auth.authenticate, assignRole);
 
 userRoute.route("/getDataPackagesList").post(getDataPackagesList);
 

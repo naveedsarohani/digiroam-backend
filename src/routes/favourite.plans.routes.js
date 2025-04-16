@@ -1,21 +1,26 @@
 import { Router } from "express";
-import { auth } from "../middeware/auth.js";
-import { validate } from "../middeware/validation.js";
+
+import auth from "../app/middlewares/auth.js";
+import schema from "../app/middlewares/schema.js";
 import favouritePlanController from "../app/controllers/favourite.plan.controller.js";
 import favouritePlansSchema from "../schemas/favourite.plans.schema.js";
 
 const FavouritePlanRoutes = Router({ mergeParams: true });
 
 FavouritePlanRoutes.get("/",
-    auth, favouritePlanController.index
+    auth.authenticate,
+    favouritePlanController.index
 );
 
 FavouritePlanRoutes.post("/",
-    auth, validate(favouritePlansSchema.upsert), favouritePlanController.upsert
+    auth.authenticate,
+    schema.validator(favouritePlansSchema.upsert),
+    favouritePlanController.upsert
 );
 
 FavouritePlanRoutes.delete("/:packageCode",
-    auth, favouritePlanController.remove
+    auth.authenticate,
+    favouritePlanController.remove
 );
 
 export default FavouritePlanRoutes;

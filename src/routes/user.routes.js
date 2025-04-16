@@ -1,25 +1,34 @@
 import { Router } from "express";
-import { validate } from "../middeware/validation.js";
+
+import auth from "../app/middlewares/auth.js";
+import schema from "../app/middlewares/schema.js";
 import userSchema from "../schemas/user.schema.js";
 import userController from "../app/controllers/user.controller.js";
-import { auth } from "../middeware/auth.js";
 
 const userRoutes = Router({ mergeParams: true });
 
 userRoutes.get("/",
-    auth, userController.index
+    auth.authenticate,
+    userController.index
 );
+
 // userRoutes.get("/:userId",
 //     auth, userController.show
 // );
+
 userRoutes.get("/esims",
-    auth, userController.esims
+    auth.authenticate,
+    userController.esims
 );
+
 // userRoutes.post("/",
-//     validate(userSchema.create), userController.create
+//     schema.validator(userSchema.create), 
+//     userController.creates
 // );
+
 // userRoutes.delete("/:userId",
-//     auth, userController.delete
+//     auth.authenticate, 
+//     userController.delete
 // );
 
 export default userRoutes;

@@ -24,12 +24,12 @@ const send = async (email, options) => {
         attachments: options.attachments ?? []
     };
 
-    if (options.template) {
+    if (options?.template) {
         mailOptions.html = await retrieveHtmlTemplate(options.template, options);
-    } else if (options.html) {
+    } else if (options?.html) {
         mailOptions.html = options.html;
     } else {
-        mailOptions.text = options.text;
+        mailOptions.text = options?.text ?? "";
     }
 
     try {

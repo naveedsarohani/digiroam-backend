@@ -12,8 +12,6 @@ const getCartDetails = async (req, res) => {
     }
 }
 
-
-
 const addToCart = async (req, res) => {
     const { productId, productName, productPrice, productQuantity } = req.body;
 

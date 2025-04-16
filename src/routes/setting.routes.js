@@ -1,6 +1,7 @@
 import { Router } from "express";
-import { auth } from "../middeware/auth.js";
-import { validate } from "../middeware/validation.js";
+
+import auth from "../app/middlewares/auth.js";
+import schema from "../app/middlewares/schema.js";
 import settingController from "../app/controllers/setting.controller.js";
 import settingSchema from "../schemas/setting.schema.js";
 
@@ -10,7 +11,9 @@ settingRoutes.get("/",
     settingController.read
 );
 settingRoutes.patch("/",
-    auth, validate(settingSchema.update), settingController.update
+    auth.authenticate,
+    schema.validator(settingSchema.update),
+    settingController.update
 );
 
 export default settingRoutes;

@@ -1,4 +1,4 @@
-import { User } from "../models/user.model.js";
+import User from "../app/models/user.model.js";
 import { Strategy as FacebookStrategy } from "passport-facebook";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { Strategy as AppleStrategy } from "passport-apple"

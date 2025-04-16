@@ -1,5 +1,5 @@
 import { ApiError } from "../utils/ApiError.js";
-import { User } from "../models/user.model.js";
+import User from "../app/models/user.model.js"
 import { ApiResponse } from "../utils/ApiResonse.js";
 import { generateAndSaveOtp } from "../utils/generateOtp.js";
 import { configDotenv } from "dotenv";

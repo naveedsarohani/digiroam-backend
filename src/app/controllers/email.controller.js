@@ -1,5 +1,5 @@
 import emailService from "../services/email.template.service.js";
-import { User } from "../../models/user.model.js";
+import User from "../models/user.model.js";
 import email from "../../utils/helpers/email.js";
 import path from "path";
 import { retrieveProfiles } from "../../utils/helpers/email.on.event.js";
@@ -63,7 +63,7 @@ const send = async (req, res) => {
 
         return res.response(200, `The email was sent successfully`);
     } catch (error) {
-        res.response(500, "internal server error", { error: error.message })
+        res.response(500, "Internal server error", { error: error.message })
     }
 };
 

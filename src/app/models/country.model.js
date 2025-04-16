@@ -10,7 +10,6 @@ const countrySchema = new mongoose.Schema({
     dialingCode: {
         type: String,
         required: true,
-
     },
     currency: {
         type: String,
@@ -19,4 +18,5 @@ const countrySchema = new mongoose.Schema({
     },
 });
 
-export const Country = mongoose.model('Country', countrySchema);
+const Country = mongoose.model('Country', countrySchema);
+export default Country;

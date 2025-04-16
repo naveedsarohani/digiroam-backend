@@ -1,4 +1,4 @@
-import { dataPackagesResponse } from "../../middeware/transformation/responseTransformation.js";
+import modifyPackagePrices from "../../utils/helpers/modify.package.prices.js";
 import axiosInstance from "../../utils/helpers/axios.instance.js";
 import favouritePlanService from "../services/favourite.plan.service.js";
 
@@ -15,7 +15,7 @@ const index = async (req, res) => {
             );
         }
 
-        const priceSettled = dataPackagesResponse(response.data.obj);
+        const priceSettled = modifyPackagePrices(response.data.obj);
         const favouritePlans = await favouritePlanService.retrieve(req.user._id);
         if (!favouritePlans) {
             return res.response(200, "Your favourite plan list", { plans: [] });
