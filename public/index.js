@@ -13,18 +13,13 @@ import response from "../src/app/middlewares/response.js";
 import database from "../src/config/database.js";
 import { application, server } from "../src/config/env.js";
 import apiRoutes from "../src/app.js";
-import {
-    initializeAppleStrategy,
-    initializeFacebookStrategy,
-    initializeGoogleStrategy,
-} from "../src/controllers/auth.controller.js";
+import authController from "../src/app/controllers/auth.controller.js";
 
 const app = express();
 dotenv.config({ path: "../src/config/env.js" });
-
-initializeFacebookStrategy(passport);
-initializeGoogleStrategy(passport);
-initializeAppleStrategy(passport)
+authController.facebookLoginStrategy(passport);
+authController.googleLoginStrategy(passport);
+authController.appleLoginStrategy(passport);
 
 // application-level middlewares
 app.use(cors({ origin: ["http://localhost:5173", server.origin], credentials: true }));
@@ -37,13 +32,13 @@ app.use(morgan("dev")); // Logging middleware
 app.use(cookieParser()); // Cookie parsing middleware
 app.use(response);
 app.use(errorHandler);
-// app.use(rateLimit({
-//     windowMs: 10 * 60 * 1000, // 10 minutes
-//     max: 80, // Limit each IP to 100 requests per `window`
-//     standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-//     legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-//     message: "Too many requests, Please try again later.",
-// }));
+app.use(rateLimit({
+    windowMs: 10 * 60 * 1000, // 10 minutes
+    max: 80, // Limit each IP to 100 requests per `window`
+    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+    message: "Too many requests, Please try again later.",
+}));
 
 // root route
 app.get("/", (_, res) => {

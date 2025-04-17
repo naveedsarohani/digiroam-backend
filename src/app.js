@@ -1,13 +1,13 @@
 import { Router } from "express";
 
 import { userRoute } from "./routes/user.route.js";
-import { otpVerificationRoute } from "./routes/otpVerification.route.js";
 import { eSimRoute } from "./routes/eSim.routes.js";
 import { cartRoute } from "./routes/userCart.routes.js";
 
 import authRoutes from "./routes/auth.routes.js";
 import countryRoutes from "./routes/country.routes.js";
 import esimPlanRoutes from "./routes/esim.plan.routes.js";
+import otpVerificationRoutes from "./routes/otp.verification.routes.js";
 import emailTemplateRoutes from "./routes/email.template.routes.js";
 import emailRoutes from "./routes/email.routes.js";
 import userRoutes from "./routes/user.routes.js";
@@ -24,7 +24,7 @@ apiRoutes.use("/user", userRoute);
 apiRoutes.use("/countries", countryRoutes);
 apiRoutes.use("/auth", authRoutes);
 apiRoutes.use("/esim-plans", esimPlanRoutes);
-apiRoutes.use("/otp-verification", otpVerificationRoute);
+apiRoutes.use("/otp-verification", otpVerificationRoutes);
 apiRoutes.use("/eSim", eSimRoute);
 apiRoutes.use("/payment", paymentGatewayRoutes);
 apiRoutes.use("/cart", cartRoute);

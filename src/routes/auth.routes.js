@@ -30,16 +30,15 @@ authRoutes.get("/apple",
   passport.authenticate("apple", { scope: ["name", "email"] })
 )
 
-authRoutes.post(
-  "/apple/callback",
+authRoutes.post("/apple/callback",
   passport.authenticate("apple", { session: false }),
   authController.socialCallback
 );
 
 // direct login routes
-authRoutes.post("/login",
-  schema.validator(authSchema.loginSchema),
-  authController.validationLogin
-)
+// authRoutes.post("/login",
+//   schema.validator(authSchema.loginSchema),
+//   authController.validationLogin
+// )
 
 export default authRoutes;

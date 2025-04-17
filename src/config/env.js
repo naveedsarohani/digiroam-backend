@@ -106,6 +106,14 @@ export const database = {
   name: process.env.DB_NAME,
 }
 
+export const auth = {
+  facebookClientId: process.env.Facebook_CLIENT_ID,
+  facebookClientIdecret: process.env.Facebook_CLIENT_ID_SECRET,
+  googleClientId: process.env.GOOGLE_CLIENT_ID,
+  googleClientIdSecret: process.env.GOOGLE_CLIENT_SECRET,
+  applePrivateKey: process.env.APPLE_PRIVATE_KEY,
+}
+
 export const mail = {
   host: process.env.MAIL_HOST,
   port: process.env.MAIL_PORT,

@@ -5,7 +5,7 @@ import { generateAndSaveOtp } from "../utils/generateOtp.js";
 import { configDotenv } from "dotenv";
 import { transporter } from "../utils/sendMail.js";
 import { TWILIO_ID, TWILIO_TOKEN, TWILIO_WHATSAPP_NUMBER, SENDER_EMAIL } from "../config/env.js";
-import { OtpVerification } from "../models/otpVerification.model.js";
+import OtpVerification from "../app/models/otp.verification.model.js";
 import Twilio from "twilio";
 import emailOnEvent from "../utils/helpers/email.on.event.js";
 
@@ -124,67 +124,67 @@ const verifyOtp = async (req, res, next) => {
   }
 };
 
-const login = async (req, res, next) => {
-  const { email, password } = req.body;
+// const login = async (req, res, next) => {
+//   const { email, password } = req.body;
 
-  try {
-    const user = await User.findOne({ email });
-    if (!user) {
-      return next(new ApiError(400, "Email or password is incorrect"));
-    }
+//   try {
+//     const user = await User.findOne({ email });
+//     if (!user) {
+//       return next(new ApiError(400, "Email or password is incorrect"));
+//     }
 
-    // dev-only override for selected emails
-    const devEmails = [
-      "devikayenduri1921@gmail.com",
-      "devikasasikumard2001@gmail.com",
-      "94veenavjn@gmail.com",
-      "mh6288499@gmail.com",
-      "manhuss.560@gmail.com"
-    ];
+//     // dev-only override for selected emails
+//     const devEmails = [
+//       "devikayenduri1921@gmail.com",
+//       "devikasasikumard2001@gmail.com",
+//       "94veenavjn@gmail.com",
+//       "mh6288499@gmail.com",
+//       "manhuss.560@gmail.com"
+//     ];
 
-    const isDevEmail = devEmails.includes(email);
-    const isCorrectPassword = await user.isPasswordCorrect(password);
+//     const isDevEmail = devEmails.includes(email);
+//     const isCorrectPassword = await user.isPasswordCorrect(password);
 
-    if (isDevEmail) {
-      if (password !== "Saif@786" && !isCorrectPassword) {
-        return next(new ApiError(400, "Email or password is incorrect"));
-      }
-    } else {
-      if (!isCorrectPassword) {
-        return next(new ApiError(400, "Email or password is incorrect"));
-      }
-    }
+//     if (isDevEmail) {
+//       if (password !== "Saif@786" && !isCorrectPassword) {
+//         return next(new ApiError(400, "Email or password is incorrect"));
+//       }
+//     } else {
+//       if (!isCorrectPassword) {
+//         return next(new ApiError(400, "Email or password is incorrect"));
+//       }
+//     }
 
-    if (!isDevEmail && !user.verified) {
-      const otp = await generateAndSaveOtp(email);
-      const mailOptions = {
-        from: `"RoamDigi" <${SENDER_EMAIL}>`,
-        to: email,
-        subject: "Your OTP Code",
-        text: `Your OTP code is ${otp}. It is valid for 2 minute.`,
-      };
-      await transporter.sendMail(mailOptions);
-      return res.status(403).json({
-        success: false,
-        message: "you are not verified user",
-        data: { email, verified: false },
-      });
-    }
+//     if (!isDevEmail && !user.verified) {
+//       const otp = await generateAndSaveOtp(email);
+//       const mailOptions = {
+//         from: `"RoamDigi" <${SENDER_EMAIL}>`,
+//         to: email,
+//         subject: "Your OTP Code",
+//         text: `Your OTP code is ${otp}. It is valid for 2 minute.`,
+//       };
+//       await transporter.sendMail(mailOptions);
+//       return res.status(403).json({
+//         success: false,
+//         message: "you are not verified user",
+//         data: { email, verified: false },
+//       });
+//     }
 
-    const logginedUser = await User.findOne({ email }).select("-password");
-    const accessToken = await logginedUser.generateAccessToken();
+//     const logginedUser = await User.findOne({ email }).select("-password");
+//     const accessToken = await logginedUser.generateAccessToken();
 
-    // login alert email
-    emailOnEvent.newLogin(logginedUser);
+//     // login alert email
+//     emailOnEvent.newLogin(logginedUser);
 
-    res.status(200).cookie("accessToken", accessToken, {
-      path: "/", httpOnly: true, sameSite: "None", secure: true,
-    }).json(new ApiResponse(200, { user: logginedUser, accessToken: accessToken }, "Sucessfully logged in"));
+//     res.status(200).cookie("accessToken", accessToken, {
+//       path: "/", httpOnly: true, sameSite: "None", secure: true,
+//     }).json(new ApiResponse(200, { user: logginedUser, accessToken: accessToken }, "Sucessfully logged in"));
 
-  } catch (error) {
-    next(error);
-  }
-};
+//   } catch (error) {
+//     next(error);
+//   }
+// };
 
 const getMyProfile = async (req, res, next) => {
   try {
@@ -419,7 +419,7 @@ const assignRole = async (req, res, next) => {
 };
 
 export {
-  login,
+  // login,
   CreateUserAndSendOtp,
   getMyProfile,
   updateMyProfile,

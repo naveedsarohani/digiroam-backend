@@ -1,10 +1,109 @@
-import { generateAndSaveOtp } from "../../utils/generateOtp.js";
-import User from "../models/user.model.js";
-import emailTransporter from "../../utils/helpers/email.js";
-import { server } from "../../config/env.js";
+import { Strategy as FacebookStrategy } from "passport-facebook";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import { Strategy as AppleStrategy } from "passport-apple"
+
 import emailOnEvent from "../../utils/helpers/email.on.event.js";
+import randomString from "../../utils/helpers/random.string.js";
+import { generateAndSaveOtp } from "../../utils/generateOtp.js";
+import emailTransporter from "../../utils/helpers/email.js";
+import { auth, server } from "../../config/env.js";
+import User from "../models/user.model.js";
 
 // social logins
+export const facebookLoginStrategy = (passport) => {
+    passport.use(
+        new FacebookStrategy(
+            {
+                clientID: auth.facebookClientId,
+                clientSecret: auth.facebookClientIdecret,
+                callbackURL: "https://dev.roamdigi.com/api/auth/facebook/callback",
+            },
+            async function (accessToken, refreshToken, profile, done) {
+                try {
+                    const existUser = await User.findOne({ socialID: profile._json.id }).select("-password");
+                    if (existUser) return done(null, existUser);
+
+                    const user = await User.create({
+                        socialID: profile._json.id,
+                        name: profile._json.name,
+                        email: "",
+                        password: "",
+                        accountType: 1,
+                        userRole: 1,
+                        isSocialUser: true,
+                    });
+
+                    done(null, user);
+                } catch (error) { return done(error, null); }
+            }
+        )
+    )
+};
+
+export const googleLoginStrategy = (passport) => {
+    passport.use(
+        new GoogleStrategy(
+            {
+                clientID: auth.googleClientId,
+                clientSecret: auth.googleClientIdSecret,
+                callbackURL: "https://dev.roamdigi.com/api/auth/google/callback",
+            },
+            async (token, tokenSecret, profile, done) => {
+                try {
+                    const existingUser = await User.findOne({ email: profile._json.email }).select("-password");
+                    if (existingUser) return done(null, existingUser);
+
+                    const user = await User.create({
+                        name: profile._json.name,
+                        email: profile._json.email,
+                        password: randomString(8),
+                        accountType: 1,
+                        userRole: 1,
+                        isSocialUser: true,
+                        socialID: profile.id,
+                    });
+
+                    done(null, user);
+                } catch (error) { return done(error, null); }
+            }
+        )
+    );
+};
+
+export const appleLoginStrategy = (passport) => {
+    passport.use(
+        new AppleStrategy(
+            {
+                clientID: "com.roamdigi.si",
+                teamID: "4PAJC5AVN9",
+                keyID: "RDFVK4AR7N",
+                privateKey: auth.applePrivateKey,
+                callbackURL: "https://dev.roamdigi.com/api/auth/apple/callback",
+            },
+            async (accessToken, refreshToken, idToken, profile, done) => {
+                try {
+                    const existUser = await User.findOne({ socialID: profile.id }).select("-password");
+                    if (existUser) return done(null, existUser);
+
+                    const user = await User.create({
+                        socialID: profile.id,
+                        name: profile.name,
+                        email: profile.email,
+                        password: randomString(8),
+                        accountType: 1,
+                        userRole: 1,
+                        isSocialUser: true,
+                    });
+
+                    done(null, user);
+                } catch (error) {
+                    return done(error, null);
+                }
+            }
+        )
+    );
+};
+
 const socialCallback = async (req, res) => {
     try {
         if (!req?.user) return res.redirect(`${server.origin}/login?error=auth_failed`);
@@ -73,4 +172,4 @@ const validationLogin = async (req, res) => {
     }
 }
 
-export default { socialCallback, validationLogin };
+export default { facebookLoginStrategy, googleLoginStrategy, appleLoginStrategy, socialCallback, validationLogin };
