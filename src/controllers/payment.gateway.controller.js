@@ -150,7 +150,6 @@ const stripePaymentIntent = async (req, res) => {
 
     res.json({ clientSecret: paymentIntent.client_secret });
   } catch (error) {
-    console.error(error.message);
     res.status(500).json({ error: error.message });
   }
 };

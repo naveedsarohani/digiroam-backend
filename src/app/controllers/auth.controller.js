@@ -8,9 +8,10 @@ import { generateAndSaveOtp } from "../../utils/generateOtp.js";
 import emailTransporter from "../../utils/helpers/email.js";
 import { auth, server } from "../../config/env.js";
 import User from "../models/user.model.js";
+import OtpVerification from "../models/otp.verification.model.js";
 
 // social logins
-export const facebookLoginStrategy = (passport) => {
+const facebookLoginStrategy = (passport) => {
     passport.use(
         new FacebookStrategy(
             {
@@ -40,7 +41,7 @@ export const facebookLoginStrategy = (passport) => {
     )
 };
 
-export const googleLoginStrategy = (passport) => {
+const googleLoginStrategy = (passport) => {
     passport.use(
         new GoogleStrategy(
             {
@@ -70,7 +71,7 @@ export const googleLoginStrategy = (passport) => {
     );
 };
 
-export const appleLoginStrategy = (passport) => {
+const appleLoginStrategy = (passport) => {
     passport.use(
         new AppleStrategy(
             {
@@ -172,4 +173,124 @@ const validationLogin = async (req, res) => {
     }
 }
 
-export default { facebookLoginStrategy, googleLoginStrategy, appleLoginStrategy, socialCallback, validationLogin };
+const register = async (req, res, next) => {
+    try {
+        const { name, email, password } = req.body;
+
+        if (await User.findOne({ email })) {
+            return res.response(400, "Email is already in use");
+        }
+
+        const mailOptions = {
+            subject: "Your OTP Code",
+            text: `Your OTP code is ${await generateAndSaveOtp(email)}. It is valid for 2 minute.`,
+        };
+
+        await User.create({ name, email, password });
+        await emailTransporter.send(email, mailOptions);
+
+        return res.response(201, "User created successfully", { data: { email } });
+    } catch (error) {
+        return res.response(500, "Internal server error", { error: error.message });
+    }
+};
+
+const verifyOtp = async (req, res, next) => {
+    try {
+        const { otp, email } = req.body;
+        const findOtp = await OtpVerification.findOne({ email });
+
+        if (!findOtp) return res.response(404, "Otp not found");
+        if (findOtp?.otp !== otp) return res.response(400, "Otp is incorrect");
+
+        if (new Date() > findOtp.expiresAt) return res.response(400, "Otp expired");
+
+        const user = await User.findOne({ email }).select("-password");
+        user.verified = true;
+        await user.save();
+
+        const accessToken = await user.generateAccessToken();
+        return res.response(200, "User verified successfully", { data: { user: user, accessToken } });
+    } catch (e) {
+        return res.response(500, "Internal server error", { error: e.message });
+    }
+};
+
+const forgotPasswordRequest = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const user = await User.findOne({ email });
+
+        if (!user) return res.response(400, "User not found");
+
+        const otp = await generateAndSaveOtp(email);
+        const mailOptions = {
+            subject: "Password reset request",
+            text: `Your OTP code is ${otp}. It is valid for 2 minute.`,
+        };
+
+        await emailTransporter.send(email, mailOptions);
+        return res.response(200, "OTP sent successfully");
+    } catch (error) {
+        return res.response(500, "Internal server error", { error: error.message });
+    }
+};
+
+const forgotPasswordOtpVerification = async (req, res) => {
+    try {
+        const { email, otp } = req.body;
+        const otpVerification = await OtpVerification.findOne({ email });
+
+        if (!otpVerification) return res.response(404, "Otp not found");
+
+        let expirationDate = new Date(otpVerification.expiresAt);
+
+        if (new Date() > expirationDate) {
+            return res.response(400, "Otp expired");
+        }
+
+        const user = await User.findOne({ email });
+        if (!user) return res.response(404, "User not found");
+
+        if (otpVerification.otp !== otp) return res.response(400, "Otp is incorrect");
+
+        const { hashedPassword } = user.generateHashedPassword();
+
+        user.password = hashedPassword.slice(10, 18);
+        await user.save();
+
+        const mailOptions = {
+            subject: "Your password reset Successfully",
+            text: `Your new password is ${hashedPassword.slice(10, 18)}`,
+        };
+
+        await emailTransporter.send(email, mailOptions);
+        await emailOnEvent.passwordChange(user);
+
+        return res.response(200, "Password reset successfully");
+    } catch (error) {
+        return res.response(500, "Internal server error", { error: error.message });
+    }
+};
+
+const verifyToken = async (req, res) => {
+    try {
+        if (!req?.user) return res.response(401, "Unauthorized");
+        return res.response(200, "Token is valid", { data: { user: req.user } });
+    } catch (error) {
+        return res.response(500, "Internal server error", { error: error.message });
+    }
+};
+
+export default {
+    facebookLoginStrategy,
+    googleLoginStrategy,
+    appleLoginStrategy,
+    socialCallback,
+    validationLogin,
+    register,
+    verifyOtp,
+    forgotPasswordRequest,
+    forgotPasswordOtpVerification,
+    verifyToken
+};

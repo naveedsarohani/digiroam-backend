@@ -1,17 +1,5 @@
 import { Router } from "express";
-import {
-  assignRole,
-  changeCurrentPassword,
-  CreateUserAndSendOtp,
-  forgotPasswordOtpVerification,
-  forgotPasswordRequest,
-  getMyProfile,
-  logout,
-  sendWhatsAppOtp,
-  updateMyProfile,
-  verifyOtp,
-  verifyToken,
-} from "../controllers/user.controller.js";
+import { logout, sendWhatsAppOtp } from "../controllers/user.controller.js";
 
 import auth from "../app/middlewares/auth.js";
 import schema from "../app/middlewares/schema.js";
@@ -24,9 +12,11 @@ import {
   changeCurrentPasswordSchema,
   updateProfileSchema,
 } from "../validators/user.validator.js";
+
 import authController from "../app/controllers/auth.controller.js";
 import authSchema from "../schemas/auth.schema.js";
 import externalEsimPlanController from "../app/controllers/external.esim.plan.controller.js";
+import userController from "../app/controllers/user.controller.js";
 
 const userRoute = Router({ mergeParams: true });
 
@@ -35,36 +25,56 @@ userRoute.post("/login",
   authController.validationLogin
 );
 
-userRoute
-  .route("/createUserAndSendOtp")
-  .post(schema.validator(createUserAndSendOtpSchema), CreateUserAndSendOtp);
-// userRoute.route("/login").post(schema.validator(loginSchema), login);
-userRoute.route("/logout").post(auth.authenticate, logout);
-userRoute.route("/getMyProfile").get(auth.authenticate, getMyProfile);
-userRoute
-  .route("/updateProfile")
-  .put(schema.validator(updateProfileSchema), auth.authenticate, updateMyProfile);
-userRoute.route("/verifyOtp").post(schema.validator(verifyOtpSchema), verifyOtp);
-userRoute.route("/verify-token").post(auth.authenticate, verifyToken);
+userRoute.post("/createUserAndSendOtp",
+  schema.validator(createUserAndSendOtpSchema),
+  authController.register
+);
 
-userRoute
-  .route("/forgot-password")
-  .post(schema.validator(forgotPasswordRequestSchema), forgotPasswordRequest);
+userRoute.get("/getMyProfile",
+  auth.authenticate,
+  userController.myProfile
+);
 
-userRoute
-  .route("/verifyForgotPasswordOtpVerification")
-  .post(
-    schema.validator(verifyForgotPassOtpVerificationSchema),
-    forgotPasswordOtpVerification
-  );
+userRoute.put("/updateProfile",
+  auth.authenticate,
+  schema.validator(updateProfileSchema),
+  userController.update
+);
 
-userRoute
-  .route("/change-password")
-  .post(schema.validator(changeCurrentPasswordSchema), auth.authenticate, changeCurrentPassword);
-userRoute.route("/assignRole/:userId").post(auth.authenticate, assignRole);
+userRoute.post("/verifyOtp",
+  schema.validator(verifyOtpSchema),
+  authController.verifyOtp
+);
+
+userRoute.post("/verify-token",
+  auth.authenticate,
+  authController.verifyToken
+);
+
+userRoute.post("/change-password",
+  auth.authenticate,
+  schema.validator(changeCurrentPasswordSchema),
+  userController.updatePassword
+);
+
+userRoute.post("/assignRole/:userId",
+  auth.authenticate,
+  userController.assignRole
+);
+
+userRoute.post("/forgot-password",
+  schema.validator(forgotPasswordRequestSchema),
+  authController.forgotPasswordRequest
+);
+
+userRoute.post("/verifyForgotPasswordOtpVerification",
+  schema.validator(verifyForgotPassOtpVerificationSchema),
+  authController.forgotPasswordOtpVerification
+);
 
 userRoute.route("/getDataPackagesList").post(externalEsimPlanController.index);
 
+userRoute.route("/logout").post(auth.authenticate, logout);
 userRoute.route("/sendWhatsAppOtp").post(sendWhatsAppOtp);
 
 export { userRoute };
