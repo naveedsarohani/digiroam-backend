@@ -27,7 +27,7 @@ const facebookLoginStrategy = (passport) => {
                     const user = await User.create({
                         socialID: profile._json.id,
                         name: profile._json.name,
-                        email: "",
+                        email: profile?.emails?.[0]?.value || profile._json?.email || "",
                         password: "",
                         accountType: 1,
                         userRole: 1,
