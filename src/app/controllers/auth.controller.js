@@ -123,9 +123,9 @@ const socialCallback = async (req, res) => {
 
         res.redirect(
             `${server.origin}/auth/callback?accessToken=${accessToken}&user=${encodeURIComponent(
-                JSON.stringify(user)
-            )}}`
-        );
+              JSON.stringify(user)
+            )}`
+          );          
     } catch (error) {
         res.redirect(`${server.origin}/login?error=${encodeURIComponent(error.message)}`);
     }
