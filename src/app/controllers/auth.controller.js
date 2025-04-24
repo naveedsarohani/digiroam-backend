@@ -18,16 +18,23 @@ const facebookLoginStrategy = (passport) => {
                 clientID: auth.facebookClientId,
                 clientSecret: auth.facebookClientIdecret,
                 callbackURL: "https://dev.roamdigi.com/api/auth/facebook/callback",
+                profileFields: ["id", "displayName", "photos", "email"],
             },
             async function (accessToken, refreshToken, profile, done) {
                 try {
+                    const email = profile?.emails?.[0]?.value || profile._json?.email;
+
+                    if (!email) {
+                        return done(new Error("Email not available from Facebook"), null);
+                    }
+
                     const existUser = await User.findOne({ socialID: profile._json.id }).select("-password");
                     if (existUser) return done(null, existUser);
 
                     const user = await User.create({
                         socialID: profile._json.id,
                         name: profile._json.name,
-                        email: profile?.emails?.[0]?.value || profile._json?.email || "",
+                        email: email,
                         password: "",
                         accountType: 1,
                         userRole: 1,
@@ -35,10 +42,12 @@ const facebookLoginStrategy = (passport) => {
                     });
 
                     done(null, user);
-                } catch (error) { return done(error, null); }
+                } catch (error) {
+                    return done(error, null);
+                }
             }
         )
-    )
+    );
 };
 
 const googleLoginStrategy = (passport) => {

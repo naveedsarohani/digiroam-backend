@@ -2,14 +2,12 @@ import { Router } from "express";
 import passport from "passport";
 
 import authController from "../app/controllers/auth.controller.js";
-import schema from "../app/middlewares/schema.js";
-import authSchema from "../schemas/auth.schema.js";
 
 const authRoutes = Router({ mergeParams: true });
 
 // social login routes
 authRoutes.get("/facebook",
-  passport.authenticate("facebook", { scope: "email" })
+  passport.authenticate("facebook", { scope: ["email"] })
 );
 
 authRoutes.get("/facebook/callback",
