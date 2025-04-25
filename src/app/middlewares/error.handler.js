@@ -1,9 +1,14 @@
 const errorHandler = (err, req, res, next) => {
-  err.message = err.message || "Internal Server Error";
-  err.statusCode = err.statusCode || 500;
+  const statusCode = typeof err.statusCode === "number" ? err.statusCode
+    : typeof err.status === "number" ? err.status
+      : 500;
 
-  return res
-    .status(err.statusCode)
-    .json({ success: false, message: err.message });
+  const message = err.message || "Internal Server Error";
+
+  return res.status(statusCode).json({
+    success: false,
+    message,
+  });
 };
+
 export default errorHandler;

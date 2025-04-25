@@ -92,21 +92,25 @@ const appleLoginStrategy = (passport) => {
             },
             async (accessToken, refreshToken, idToken, profile, done) => {
                 try {
-                    const existUser = await User.findOne({ socialID: profile.id }).select("-password");
-                    if (existUser) return done(null, existUser);
+                    const existingUser = await User.findOne({ socialID: profile.id }).select("-password");
+                    if (existingUser) return done(null, existingUser);
 
-                    const user = await User.create({
+                    const fallbackEmail = profile.email || `${profile.id}@appleid.com`;
+                    const fallbackName = profile.name?.firstName || "Apple User";
+
+                    const newUser = await User.create({
                         socialID: profile.id,
-                        name: profile.name,
-                        email: profile.email,
+                        name: fallbackName,
+                        email: fallbackEmail,
                         password: randomString(8),
                         accountType: 1,
                         userRole: 1,
                         isSocialUser: true,
                     });
 
-                    done(null, user);
+                    done(null, newUser);
                 } catch (error) {
+                    console.error("Apple login error:", error);
                     return done(error, null);
                 }
             }
@@ -118,18 +122,19 @@ const socialCallback = async (req, res) => {
     try {
         if (!req?.user) return res.redirect(`${server.origin}/login?error=auth_failed`);
 
-        const user = await User.findOne({ _id: req.user._id }).select("-password");
+        const user = await User.findById(req.user._id).select("-password");
         const accessToken = user.generateAccessToken();
 
         res.redirect(
             `${server.origin}/auth/callback?accessToken=${accessToken}&user=${encodeURIComponent(
-              JSON.stringify(user)
+                JSON.stringify(user)
             )}`
-          );          
+        );
     } catch (error) {
+        console.error("Social Callback Error:", error);
         res.redirect(`${server.origin}/login?error=${encodeURIComponent(error.message)}`);
     }
-}
+};
 
 const validationLogin = async (req, res) => {
     try {
