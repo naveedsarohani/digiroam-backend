@@ -9,6 +9,7 @@ import emailTransporter from "../../utils/helpers/email.js";
 import { auth, server } from "../../config/env.js";
 import User from "../models/user.model.js";
 import OtpVerification from "../models/otp.verification.model.js";
+import jwt_decode from "jwt-decode";
 
 // social logins
 const facebookLoginStrategy = (passport) => {
@@ -94,16 +95,19 @@ const appleLoginStrategy = (passport) => {
             },
             async (accessToken, refreshToken, idToken, profile, done) => {
                 try {
-
+                    const decodedToken = jwt_decode(idToken);
                     const socialID = profile?.id;
                     const email = profile?.email || `${socialID}@appleid.com`;
                     const name = profile?.name?.firstName || "Apple User";
+
+                    console.log("decodedToken", decodedToken);
+                    console.log("decodedToken", JSON.stringify(decodedToken, null, 2));
 
                     console.log("socilalID", socialID);
                     console.log("email", email);
                     console.log("name", name);
                     console.log("profile", JSON.stringify(profile, null, 2));
-                                        
+
                     if (!socialID) {
                         console.error("No socialID from Apple.");
                         return done(new Error("Invalid Apple profile response"), null);
