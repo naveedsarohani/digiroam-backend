@@ -94,24 +94,35 @@ const appleLoginStrategy = (passport) => {
             },
             async (accessToken, refreshToken, idToken, profile, done) => {
                 try {
-                    console.log(profile);
-                    const fallbackEmail = profile.email || `${profile.id}@appleid.com`;
-                    const fallbackName = profile.name?.firstName || "Apple User";
+                    console.log("Apple Profile:", profile);
 
-                    const existingUser = await User.findOne({ email: fallbackEmail }).select("-password");
+                    const socialID = profile?.id;
+                    const email = profile?.email || `${socialID}@appleid.com`;
+                    const name = profile?.name?.firstName || "Apple User";
+
+                    if (!socialID) {
+                        console.error("No socialID from Apple.");
+                        return done(new Error("Invalid Apple profile response"), null);
+                    }
+
+                    const existingUser = await User.findOne({
+                        $or: [{ email: email.toLowerCase() }, { socialID }],
+                    }).select("-password");
+
                     if (existingUser) return done(null, existingUser);
 
                     const newUser = await User.create({
-                        socialID: profile.id,
-                        name: fallbackName,
-                        email: fallbackEmail,
+                        socialID,
+                        name,
+                        email: email.toLowerCase(),
                         password: randomString(8),
                         accountType: 1,
                         userRole: 1,
                         isSocialUser: true,
+                        verified: true,
                     });
 
-                    done(null, newUser);
+                    return done(null, newUser);
                 } catch (error) {
                     console.error("Apple login error:", error);
                     return done(error, null);
