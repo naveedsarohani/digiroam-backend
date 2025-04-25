@@ -1,5 +1,12 @@
 import { configDotenv } from "dotenv";
 
+import fs from "fs"
+import path from "path"
+import { fileURLToPath } from "url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const privateKeyLocation = path.join(__dirname, "private_Apple_key/AuthKey_RDFVK4AR7N.p8");
+
 configDotenv();
 
 const DB_URL = process.env.DB_URL;
@@ -111,7 +118,7 @@ export const auth = {
   facebookClientIdecret: process.env.Facebook_CLIENT_ID_SECRET,
   googleClientId: process.env.GOOGLE_CLIENT_ID,
   googleClientIdSecret: process.env.GOOGLE_CLIENT_SECRET,
-  applePrivateKey: process.env.APPLE_PRIVATE_KEY,
+  privateKeyLocation: privateKeyLocation,
 }
 
 export const mail = {

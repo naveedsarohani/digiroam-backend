@@ -10,14 +10,6 @@ import { auth, server } from "../../config/env.js";
 import User from "../models/user.model.js";
 import OtpVerification from "../models/otp.verification.model.js";
 
-import fs from "fs"
-import path from "path"
-import { fileURLToPath } from "url";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-const privateKeyLocation = path.join(__dirname, "private_Apple_key/AuthKey_RDFVK4AR7N.p8")
-
 // social logins
 const facebookLoginStrategy = (passport) => {
     passport.use(
@@ -36,7 +28,7 @@ const facebookLoginStrategy = (passport) => {
                         return done(new Error("Email not available from Facebook"), null);
                     }
 
-                    const existUser = await User.findOne({ socialID: profile._json.id }).select("-password");
+                    const existUser = await User.findOne({ email: email }).select("-password");
                     if (existUser) return done(null, existUser);
 
                     const user = await User.create({
@@ -47,6 +39,7 @@ const facebookLoginStrategy = (passport) => {
                         accountType: 1,
                         userRole: 1,
                         isSocialUser: true,
+                        verified: true,
                     });
 
                     done(null, user);
@@ -79,6 +72,7 @@ const googleLoginStrategy = (passport) => {
                         userRole: 1,
                         isSocialUser: true,
                         socialID: profile.id,
+                        verified: true,
                     });
 
                     done(null, user);
@@ -92,19 +86,20 @@ const appleLoginStrategy = (passport) => {
     passport.use(
         new AppleStrategy(
             {
-                clientID: "com.roamdigi.si", 
-                teamID: "4PAJC5AVN9",       
-                keyID: "RDFVK4AR7N",        
-                privateKeyLocation: privateKeyLocation,
+                clientID: "com.roamdigi.si",
+                teamID: "4PAJC5AVN9",
+                keyID: "RDFVK4AR7N",
+                privateKeyLocation: auth.privateKeyLocation,
                 callbackURL: "https://dev.roamdigi.com/api/auth/apple/callback",
             },
             async (accessToken, refreshToken, idToken, profile, done) => {
                 try {
-                    const existingUser = await User.findOne({ socialID: profile.id }).select("-password");
-                    if (existingUser) return done(null, existingUser);
-
+                    console.log(profile);
                     const fallbackEmail = profile.email || `${profile.id}@appleid.com`;
                     const fallbackName = profile.name?.firstName || "Apple User";
+
+                    const existingUser = await User.findOne({ email: fallbackEmail }).select("-password");
+                    if (existingUser) return done(null, existingUser);
 
                     const newUser = await User.create({
                         socialID: profile.id,
