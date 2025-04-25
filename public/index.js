@@ -21,6 +21,19 @@ authController.facebookLoginStrategy(passport);
 authController.googleLoginStrategy(passport);
 authController.appleLoginStrategy(passport);
 
+
+
+import { fileURLToPath } from 'url';
+import path from "path";
+import fs from "fs";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+// Create a write stream (in append mode)
+const logStream = fs.createWriteStream(path.join(__dirname, "logs/access.log"), { flags: "a" });
+
+// Morgan setup to log HTTP requests to file
+app.use(morgan("combined", { stream: logStream })); // Logs to file
+
 // application-level middlewares
 app.use(cors({ origin: ["http://localhost:5173", server.origin], credentials: true }));
 app.use(passport.initialize());
