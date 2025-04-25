@@ -104,6 +104,10 @@ const appleLoginStrategy = (passport) => {
                     const email = profile?.email || `${socialID}@appleid.com`;
                     const name = profile?.name?.firstName || "Apple User";
 
+                    console.log("Apple Profile email:", email);
+                    console.log("Apple Profile socialID:", socialID);
+                    console.log("Apple Profile name:", name);
+
                     // if (!socialID) {
                     //     console.error("No socialID from Apple.");
                     //     return done(new Error("Invalid Apple profile response"), null);
