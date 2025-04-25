@@ -9,7 +9,6 @@ import emailTransporter from "../../utils/helpers/email.js";
 import { auth, server } from "../../config/env.js";
 import User from "../models/user.model.js";
 import OtpVerification from "../models/otp.verification.model.js";
-import { jwtDecode } from "jwt-decode";
 
 // social logins
 const facebookLoginStrategy = (passport) => {
@@ -87,74 +86,50 @@ const appleLoginStrategy = (passport) => {
     passport.use(
         new AppleStrategy(
             {
-                clientID: "com.roamdigi.si",  // Replace with your actual Apple client ID
-                teamID: "4PAJC5AVN9",         // Replace with your actual Apple team ID
-                keyID: "RDFVK4AR7N",          // Replace with your actual key ID
-                privateKeyLocation: auth.privateKeyLocation,  // Replace with correct location of the private key
-                callbackURL: "https://dev.roamdigi.com/api/auth/apple/callback",  // Replace with your actual callback URL
+                clientID: "com.roamdigi.si",
+                teamID: "4PAJC5AVN9",
+                keyID: "RDFVK4AR7N",
+                privateKeyLocation: auth.privateKeyLocation,
+                callbackURL: "https://dev.roamdigi.com/api/auth/apple/callback",
             },
             async (accessToken, refreshToken, idToken, profile, done) => {
                 try {
-                    console.log("🔑idToken:", idToken);
+                    console.log("Apple ID Token:", idToken);
+                    console.log("Apple Access Token:", accessToken);
+                    console.log("Apple Refresh", refreshToken);
+                    console.log("Apple Profile>profile:", profile?.profile);
+                    console.log("Apple Profile:", profile);
 
-                    // Check if idToken is valid
-                    if (!idToken || typeof idToken !== "string") {
-                        throw new Error("No idToken returned from Apple or invalid format");
-                    }
-
-                    // Safely decode the idToken (ensure the token is not malformed)
-                    let decoded;
-                    try {
-                        decoded = jwtDecode(idToken);  // Decode the idToken
-                    } catch (error) {
-                        console.error("Failed to decode idToken:", error);
-                        throw new Error("Invalid idToken format");
-                    }
-
-                    console.log("🧾 Decoded Apple Token:", decoded);
-
-                    // Extract user information from the profile
                     const socialID = profile?.id;
-                    const email = profile?.email || `${socialID}@appleid.com`; // Fallback if no email is provided
+                    const email = profile?.email || `${socialID}@appleid.com`;
                     const name = profile?.name?.firstName || "Apple User";
 
-                    console.log("Decoded Token:", JSON.stringify(decoded, null, 2));
-                    console.log("SocialID:", socialID);
-                    console.log("Email:", email);
-                    console.log("Name:", name);
-                    console.log("Profile:", JSON.stringify(profile, null, 2));
+                    // if (!socialID) {
+                    //     console.error("No socialID from Apple.");
+                    //     return done(new Error("Invalid Apple profile response"), null);
+                    // }
 
-                    // Ensure socialID is available
-                    if (!socialID) {
-                        console.error("No socialID from Apple.");
-                        return done(new Error("Invalid Apple profile response"), null);
-                    }
-
-                    // Check if the user already exists in the database
                     const existingUser = await User.findOne({
                         $or: [{ email: email.toLowerCase() }, { socialID }],
                     }).select("-password");
 
-                    // If the user exists, log them in
                     if (existingUser) return done(null, existingUser);
 
-                    // If the user doesn't exist, create a new one
                     const newUser = await User.create({
                         socialID,
                         name,
                         email: email.toLowerCase(),
-                        password: randomString(8), // Generate a random password for social users
-                        accountType: 1, // Assign default account type
-                        userRole: 1, // Assign default user role
+                        password: randomString(8),
+                        accountType: 1,
+                        userRole: 1,
                         isSocialUser: true,
                         verified: true,
                     });
 
-                    // Return the new user to be logged in
                     return done(null, newUser);
                 } catch (error) {
                     console.error("Apple login error:", error);
-                    return done(error, null); // Pass error to done() callback
+                    return done(error, null);
                 }
             }
         )
