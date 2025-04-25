@@ -10,6 +10,14 @@ import { auth, server } from "../../config/env.js";
 import User from "../models/user.model.js";
 import OtpVerification from "../models/otp.verification.model.js";
 
+import fs from "fs"
+import path from "path"
+import { fileURLToPath } from "url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const privateKeyLocation = path.join(__dirname, "private_Apple_key/AuthKey_RDFVK4AR7N.p8")
+
 // social logins
 const facebookLoginStrategy = (passport) => {
     passport.use(
@@ -84,10 +92,10 @@ const appleLoginStrategy = (passport) => {
     passport.use(
         new AppleStrategy(
             {
-                clientID: "com.roamdigi.si",
-                teamID: "4PAJC5AVN9",
-                keyID: "RDFVK4AR7N",
-                privateKey: auth.applePrivateKey,
+                clientID: "com.roamdigi.si", 
+                teamID: "4PAJC5AVN9",       
+                keyID: "RDFVK4AR7N",        
+                privateKeyLocation: privateKeyLocation,
                 callbackURL: "https://dev.roamdigi.com/api/auth/apple/callback",
             },
             async (accessToken, refreshToken, idToken, profile, done) => {
