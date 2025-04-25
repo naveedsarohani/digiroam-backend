@@ -20,6 +20,7 @@ dotenv.config({ path: "../src/config/env.js" });
 authController.facebookLoginStrategy(passport);
 authController.googleLoginStrategy(passport);
 authController.appleLoginStrategy(passport);
+app.set('trust proxy', 1);
 
 // application-level middlewares
 app.use(cors({ origin: ["http://localhost:5173", server.origin], credentials: true }));

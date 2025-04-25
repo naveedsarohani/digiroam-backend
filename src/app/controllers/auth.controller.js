@@ -95,7 +95,15 @@ const appleLoginStrategy = (passport) => {
             },
             async (accessToken, refreshToken, idToken, profile, done) => {
                 try {
-                    const decodedToken = jwtDecode(idToken);
+                    console.log("🔑 idToken:", idToken);
+
+                    if (!idToken || typeof idToken !== "string") {
+                        throw new Error("No idToken returned from Apple");
+                    }
+
+                    const decoded = jwtDecode(idToken); // Safely decoded only if valid
+                    console.log("🧾 Decoded Apple Token:", decoded);
+                    
                     const socialID = profile?.id;
                     const email = profile?.email || `${socialID}@appleid.com`;
                     const name = profile?.name?.firstName || "Apple User";
