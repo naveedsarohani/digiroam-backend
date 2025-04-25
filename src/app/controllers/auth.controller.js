@@ -90,6 +90,8 @@ const appleLoginStrategy = (passport) => {
                 teamID: "4PAJC5AVN9",
                 keyID: "RDFVK4AR7N",
                 privateKeyLocation: auth.privateKeyLocation,
+                scope: ["name", "email"],
+                passReqToCallback: true,
                 callbackURL: "https://dev.roamdigi.com/api/auth/apple/callback",
             },
             async (accessToken, refreshToken, idToken, profile, done) => {
