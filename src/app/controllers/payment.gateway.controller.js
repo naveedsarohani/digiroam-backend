@@ -60,33 +60,53 @@ const generatePaypalForNative = async (req, res) => {
 
 // Capture PayPal payment after user approves
 const capturePaypalForNative = async (req, res) => {
-    console.log(req.query);
+    console.log(req);
+    console.log("JSON", JSON.stringify(req));
     const { paymentId, PayerID } = req.query;
 
     const execute_payment_json = {
         payer_id: PayerID,
     };
 
-    paypal.payment.execute(paymentId, execute_payment_json, function (error, payment) {
+    paypal.payment.execute(paymentId, execute_payment_json, async function (error, payment) {
         if (error) {
             console.log(error);
-            // return res.response(500, "Error in capturing payment");
             return res.redirect('https://success.com/payment-failure');
         } else {
             if (payment.state === "approved") {
-                // return res.response(200, "Payment successful", { payment });
-                console.log(payment);
-                console.log("JSONIFIED", JSON.stringify(payment));
 
-                // const { amount, packageInfoList }
+                const { amount, packageInfoList } = await retrieveCart();
                 return res.redirect('https://success.com/payment-success');
             } else {
-                // return res.response(400, "Payment not approved");
                 return res.redirect('https://success.com/payment-failure');
             }
         }
     });
 };
+
+const retrieveCart = async () => {
+    const cart = await Cart.findOne({ userId: req.user._id });
+
+    if (!cart || cart.items.length === 0) {
+        return res.response(400, "There is no eSim or package carted to proceed with")
+    }
+
+    const packageInfoList = cart.items.map((item) => ({
+        packageCode: item.productId,
+        count: item.productQuantity,
+        price: item.productPrice * 10000,
+    }));
+
+    return res.response(200, "Payment was successful", {
+        currency_code,
+        transactionId: data.id,
+        amount: cart.totalPrice * 10000,
+        currency_code: "USD",
+        payer: data.payer,
+        packageInfoList
+    });
+
+}
 
 const stripe = new Stripe(payments.stripe.secretKey);
 const stripePaymentIntent = async (req, res) => {
