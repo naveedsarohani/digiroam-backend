@@ -65,8 +65,7 @@ const generatePaypalForNative = async (req, res) => {
 // Capture PayPal payment after user approves
 const capturePaypalForNative = async (req, res) => {
     try {
-        const { paymentId, PayerID } = req.query;
-        const userId = req.params.userId;
+        const { paymentId, PayerID, userId } = req.query;
 
         const execute_payment_json = {
             payer_id: PayerID,
@@ -103,62 +102,6 @@ const capturePaypalForNative = async (req, res) => {
         return res.redirect('https://success.com/payment-failure');
     }
 };
-
-const retrieveCart = async (userId) => {
-    try {
-        const { pricePercentage } = await settingService.retrieve();
-        const cart = await Cart.findOne({ userId });
-
-        console.log("userid", userId);
-        console.log("%", pricePercentage);
-        console.log("cart", cart);
-
-        if (!cart || cart.items.length === 0 || !pricePercentage) {
-            throw new Error("Cart is empty or price percentage not retrieved");
-        }
-
-        const packageInfoList = cart.items.map((item) => ({
-            packageCode: item.productId,
-            count: item.productQuantity,
-            price: item.productPrice * 10000,
-        }));
-
-        return {
-            markup: pricePercentage,
-            amount: cart.totalPrice * 10000,
-            packageInfoList,
-            isEmpty: false
-        };
-    } catch (error) {
-        throw error;
-    }
-}
-
-const savePurchaseAndRemoveCart = async (userId, markup, data) => {
-    try {
-        if ((await paymentService.retrieveOne({ transactionId: data.transactionId }))) {
-            throw new Error("Payment exists");
-        }
-
-        data.packageInfoList = packageInfoList?.map((pkg) => (
-            { ...pkg, price: (getPriceWithMarkup(pkg.price / 10000, markup) * 10000) }
-        ));
-
-        data.amount = packageInfoList.reduce((total, { price, count }) => (
-            total + Number(getPriceWithMarkup(price / 10000, markup) * 10000).toFixed(2) * count
-        ), 0);
-
-        if (!(await paymentService.create({ userId, ...data }))) {
-            throw new Error("Payment exists");
-        }
-
-        await Cart.findOneAndDelete({ userId });
-
-        return { failed: false }
-    } catch (error) {
-        throw error;
-    }
-}
 
 const stripe = new Stripe(payments.stripe.secretKey);
 const stripePaymentIntent = async (req, res) => {
@@ -231,6 +174,59 @@ const capturePaypalOrder = async (req, res) => {
 };
 
 // utility function to retrieve paypal access token
+const retrieveCart = async (userId) => {
+    try {
+        console.log("userId", userId);
+        const { pricePercentage } = await settingService.retrieve();
+        const cart = await Cart.findOne({ userId });
+
+        if (!cart || cart.items.length === 0 || !pricePercentage) {
+            throw new Error("Cart is empty or price percentage not retrieved");
+        }
+
+        const packageInfoList = cart.items.map((item) => ({
+            packageCode: item.productId,
+            count: item.productQuantity,
+            price: item.productPrice * 10000,
+        }));
+
+        return {
+            markup: pricePercentage,
+            amount: cart.totalPrice * 10000,
+            packageInfoList,
+            isEmpty: false
+        };
+    } catch (error) {
+        throw error;
+    }
+}
+
+const savePurchaseAndRemoveCart = async (userId, markup, data) => {
+    try {
+        if ((await paymentService.retrieveOne({ transactionId: data.transactionId }))) {
+            throw new Error("Payment exists");
+        }
+
+        data.packageInfoList = packageInfoList?.map((pkg) => (
+            { ...pkg, price: (getPriceWithMarkup(pkg.price / 10000, markup) * 10000) }
+        ));
+
+        data.amount = packageInfoList.reduce((total, { price, count }) => (
+            total + Number(getPriceWithMarkup(price / 10000, markup) * 10000).toFixed(2) * count
+        ), 0);
+
+        if (!(await paymentService.create({ userId, ...data }))) {
+            throw new Error("Payment exists");
+        }
+
+        await Cart.findOneAndDelete({ userId });
+
+        return { failed: false }
+    } catch (error) {
+        throw error;
+    }
+}
+
 const retrievePaypalAccessToken = async () => {
     try {
         const response = await axios({
