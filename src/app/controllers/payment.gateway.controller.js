@@ -130,7 +130,7 @@ const generatePaypalOrder = async (req, res) => {
     try {
         const { amount, currency: currency_code } = req.body;
 
-        if (!amount || !currency) {
+        if (!amount || !currency_code) {
             return res.response(400, "Amount and currency are required");
         }
 
@@ -169,7 +169,6 @@ const capturePaypalOrder = async (req, res) => {
             currency_code,
             transactionId: data.id,
             amount: cart.totalPrice * 10000,
-            currency_code: "USD",
             payer: data.payer,
             packageInfoList
         });
