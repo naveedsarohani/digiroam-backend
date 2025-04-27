@@ -74,11 +74,12 @@ const capturePaypalForNative = async (req, res) => {
 
         paypal.payment.execute(paymentId, execute_payment_json, async function (error, payment) {
             if (error || !payment || payment.state !== "approved") {
+                console.log(error);
                 return res.redirect('https://success.com/payment-failure');
             }
 
-            const transactionId = payment.cart;
-            const currency = payment.transactions[0].amount.currency
+            const transactionId = payment?.cart;
+            const currency = payment?.transactions[0]?.amount?.currency
 
             const { markup, amount, packageInfoList, isEmpty } = await retrieveCart(userId);
             if (isEmpty) return res.redirect('https://success.com/payment-failure');
@@ -86,6 +87,7 @@ const capturePaypalForNative = async (req, res) => {
             const { data } = await axiosInstance.post("/esim/order", {
                 transactionId, amount: String(amount), packageInfoList
             });
+
             if (data?.success === false) return res.redirect('https://success.com/payment-failure');
 
             const { failed } = await savePurchaseAndRemoveCart(userId, markup, {
@@ -124,7 +126,6 @@ const retrieveCart = async (userId) => {
             isEmpty: false
         };
     } catch (error) {
-        return { isEmpty: true };
         throw error;
     }
 }
@@ -151,7 +152,6 @@ const savePurchaseAndRemoveCart = async (userId, markup, data) => {
 
         return { failed: false }
     } catch (error) {
-        return { failed: true };
         throw error;
     }
 }
