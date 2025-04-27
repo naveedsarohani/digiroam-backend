@@ -10,12 +10,11 @@ paymentGatewayRoutes.post("/paypal/generateOrderId/native",
   paymentGatewayController.generatePaypalForNative
 );
 
-paymentGatewayRoutes.post("/paypal/native/execute-payment",
-  auth.authenticate,
+paymentGatewayRoutes.get("/paypal/native/execute-payment",
   paymentGatewayController.capturePaypalForNative
 );
 
-paymentGatewayRoutes.post("/paypal/native/cancel",
+paymentGatewayRoutes.get("/paypal/native/cancel",
   paymentGatewayController.paypalPaymentUrlHandler
 );
 

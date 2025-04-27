@@ -5,8 +5,6 @@ import paypal from "paypal-rest-sdk";
 import Cart from "../models/cart.model.js";
 import { payments } from "../../config/env.js";
 
-
-console.log(payments);
 // configure paypal for payments from mobile app
 paypal.configure({
     mode: payments.paypal.mode,
@@ -62,10 +60,11 @@ const generatePaypalForNative = async (req, res) => {
 
 // Capture PayPal payment after user approves
 const capturePaypalForNative = async (req, res) => {
-    const { paymentId, payerId } = req.body;
+    console.log(req.query);
+    const { paymentId, PayerId } = req.query;
 
     const execute_payment_json = {
-        payer_id: payerId,
+        payer_id: PayerId,
     };
 
     paypal.payment.execute(paymentId, execute_payment_json, function (error, payment) {
