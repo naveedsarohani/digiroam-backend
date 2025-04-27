@@ -132,3 +132,17 @@ export const esim = {
   baseUrl: process.env.ESIM_BASE_URL,
   accessCode: process.env.ESIM_ACCESS_CODE,
 }
+
+export const payments = {
+  paypal: {
+    baseUrl: process.env.PAYMENT_PAYPAL_API_BASE,
+    mode: process.env.PAYMENT_PAYPAL_MODE,
+    clientKey: process.env.PAYMENT_PAYPAL_CLIENT_KEY,
+    secretKey: process.env.PAYMENT_PAYPAL_SECRET_KEY,
+  },
+
+  stripe: {
+    publicKey: process.env.PAYMENT_STRIPE_PUBLIC_KEY,
+    secretKey: process.env.PAYMENT_STRIPE_SECRET_KEY,
+  }
+}
