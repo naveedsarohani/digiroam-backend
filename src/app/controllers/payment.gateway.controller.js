@@ -61,7 +61,7 @@ const generatePaypalForNative = async (req, res) => {
 // Capture PayPal payment after user approves
 const capturePaypalForNative = async (req, res) => {
     console.log(req.query);
-    const { paymentId, PayerId } = req.query;
+    const { paymentId, PayerID } = req.query;
 
     const execute_payment_json = {
         payer_id: PayerId,
