@@ -75,10 +75,10 @@ const capturePaypalForNative = async (req, res) => {
         } else {
             if (payment.state === "approved") {
                 // return res.response(200, "Payment successful", { payment });
+                console.log(payment);
+                console.log("JSONIFIED", JSON.stringify(payment));
 
-                // todo
-
-
+                // const { amount, packageInfoList }
                 return res.redirect('https://success.com/payment-success');
             } else {
                 // return res.response(400, "Payment not approved");
@@ -123,7 +123,7 @@ const generatePaypalOrder = async (req, res) => {
 
         return res.response(200, "Order has been created", { orderId: data.id, currency_code })
     } catch (error) {
-        return res.response(500, "Failed to create PayPal order");
+        return res.response(500, "Failed to create PayPal order", { error: error.message });
     }
 };
 
@@ -155,7 +155,7 @@ const capturePaypalOrder = async (req, res) => {
         });
 
     } catch (error) {
-        return res.response(500, "Failed make payment");
+        return res.response(500, "Failed make payment", { error: error.message });
     }
 };
 
