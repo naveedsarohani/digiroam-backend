@@ -207,11 +207,11 @@ const savePurchaseAndRemoveCart = async (userId, markup, data) => {
             throw new Error("Payment exists");
         }
 
-        data.packageInfoList = packageInfoList?.map((pkg) => (
+        data.packageInfoList = data.packageInfoList?.map((pkg) => (
             { ...pkg, price: (getPriceWithMarkup(pkg.price / 10000, markup) * 10000) }
         ));
 
-        data.amount = packageInfoList.reduce((total, { price, count }) => (
+        data.amount = data.packageInfoList.reduce((total, { price, count }) => (
             total + Number(getPriceWithMarkup(price / 10000, markup) * 10000).toFixed(2) * count
         ), 0);
 
