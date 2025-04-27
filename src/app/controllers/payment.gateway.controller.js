@@ -64,7 +64,7 @@ const capturePaypalForNative = async (req, res) => {
     const { paymentId, PayerID } = req.query;
 
     const execute_payment_json = {
-        payer_id: PayerId,
+        payer_id: PayerID,
     };
 
     paypal.payment.execute(paymentId, execute_payment_json, function (error, payment) {
