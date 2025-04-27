@@ -4,6 +4,10 @@ import paypal from "paypal-rest-sdk";
 
 import Cart from "../models/cart.model.js";
 import { payments } from "../../config/env.js";
+import axiosInstance from "../../utils/helpers/axios.instance.js";
+import settingService from "../services/setting.service.js";
+import getPriceWithMarkup from "../../utils/helpers/get.price.with.markup.js";
+import paymentService from "../services/payment.service.js";
 
 // configure paypal for payments from mobile app
 paypal.configure({
@@ -60,52 +64,88 @@ const generatePaypalForNative = async (req, res) => {
 
 // Capture PayPal payment after user approves
 const capturePaypalForNative = async (req, res) => {
-    console.log(req);
-    console.log("JSON", JSON.stringify(req));
     const { paymentId, PayerID } = req.query;
+    const userId = req.params.userId;
 
     const execute_payment_json = {
         payer_id: PayerID,
     };
 
     paypal.payment.execute(paymentId, execute_payment_json, async function (error, payment) {
-        if (error) {
-            console.log(error);
+        if (error || !payment || payment.state !== "approved") {
             return res.redirect('https://success.com/payment-failure');
-        } else {
-            if (payment.state === "approved") {
-
-                const { amount, packageInfoList } = await retrieveCart();
-                return res.redirect('https://success.com/payment-success');
-            } else {
-                return res.redirect('https://success.com/payment-failure');
-            }
         }
+
+        const transactionId = payment.cart;
+        const currency = payment.transactions[0].amount.currency
+
+        const { markup, amount, packageInfoList, isEmpty } = await retrieveCart(userId);
+        if (isEmpty) return res.redirect('https://success.com/payment-failure');
+
+        const { data } = await axiosInstance.post("/esim/order", {
+            transactionId, amount: String(amount), packageInfoList
+        });
+        if (data?.success === false) return res.redirect('https://success.com/payment-failure');
+
+        const { failed } = await savePurchaseAndRemoveCart(userId, markup, {
+            transactionId, currency, amount, packageInfoList, orderNo: data.obj.orderNo
+        });
+        if (failed) return res.redirect('https://success.com/payment-failure');
+
+        return res.redirect('https://success.com/payment-success');
     });
 };
 
-const retrieveCart = async () => {
-    const cart = await Cart.findOne({ userId: req.user._id });
+const retrieveCart = async (userId) => {
+    try {
+        const { pricePercentage } = await settingService.retrieve();
+        const cart = await Cart.findOne({ userId });
 
-    if (!cart || cart.items.length === 0) {
-        return res.response(400, "There is no eSim or package carted to proceed with")
+        if (!cart || cart.items.length === 0 || !pricePercentage) {
+            throw new Error("Cart is empty or price percentage not retrieved");
+        }
+
+        const packageInfoList = cart.items.map((item) => ({
+            packageCode: item.productId,
+            count: item.productQuantity,
+            price: item.productPrice * 10000,
+        }));
+
+        return {
+            markup: pricePercentage,
+            amount: cart.totalPrice * 10000,
+            packageInfoList,
+            isEmpty: false
+        };
+    } catch (error) {
+        return { isEmpty: true };
     }
+}
 
-    const packageInfoList = cart.items.map((item) => ({
-        packageCode: item.productId,
-        count: item.productQuantity,
-        price: item.productPrice * 10000,
-    }));
+const savePurchaseAndRemoveCart = async (userId, markup, data) => {
+    try {
+        if ((await paymentService.retrieveOne({ transactionId: data.transactionId }))) {
+            throw new Error("Payment exists");
+        }
 
-    return res.response(200, "Payment was successful", {
-        currency_code,
-        transactionId: data.id,
-        amount: cart.totalPrice * 10000,
-        currency_code: "USD",
-        payer: data.payer,
-        packageInfoList
-    });
+        data.packageInfoList = packageInfoList?.map((pkg) => (
+            { ...pkg, price: (getPriceWithMarkup(pkg.price / 10000, markup) * 10000) }
+        ));
 
+        data.amount = packageInfoList.reduce((total, { price, count }) => (
+            total + Number(getPriceWithMarkup(price / 10000, markup) * 10000).toFixed(2) * count
+        ), 0);
+
+        if (!(await paymentService.create({ userId, ...data }))) {
+            throw new Error("Payment exists");
+        }
+
+        await Cart.findOneAndDelete({ userId });
+
+        return { failed: false }
+    } catch (error) {
+        return { failed: true }
+    }
 }
 
 const stripe = new Stripe(payments.stripe.secretKey);
