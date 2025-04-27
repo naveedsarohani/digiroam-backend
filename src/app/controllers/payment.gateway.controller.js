@@ -5,6 +5,8 @@ import paypal from "paypal-rest-sdk";
 import Cart from "../models/cart.model.js";
 import { payments } from "../../config/env.js";
 
+
+console.log(payments);
 // configure paypal for payments from mobile app
 paypal.configure({
     mode: payments.paypal.mode,
@@ -87,7 +89,7 @@ const capturePaypalForNative = async (req, res) => {
     });
 };
 
-const stripe = new Stripe(payment.stripe.secretKey);
+const stripe = new Stripe(payments.stripe.secretKey);
 const stripePaymentIntent = async (req, res) => {
     try {
         const { amount, currency = "usd", items } = req.body;
@@ -158,15 +160,6 @@ const capturePaypalOrder = async (req, res) => {
     }
 };
 
-// axios service for handling paypal payments requests
-const paypalAxios = axios.create({
-    baseURL: payments.paypal.baseUrl,
-    headers: {
-        Authorization: `Bearer ${await retrievePaypalAccessToken()}`,
-        "Content-Type": "application/json",
-    },
-});
-
 // utility function to retrieve paypal access token
 const retrievePaypalAccessToken = async () => {
     try {
@@ -187,6 +180,16 @@ const retrievePaypalAccessToken = async () => {
         throw error;
     }
 };
+
+// axios service for handling paypal payments requests
+const paypalAxios = axios.create({
+    baseURL: payments.paypal.baseUrl,
+    headers: {
+        Authorization: `Bearer ${await retrievePaypalAccessToken()}`,
+        "Content-Type": "application/json",
+    },
+});
+
 
 export default {
     paypalPaymentUrlHandler,
