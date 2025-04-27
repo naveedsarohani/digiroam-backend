@@ -109,6 +109,10 @@ const retrieveCart = async (userId) => {
         const { pricePercentage } = await settingService.retrieve();
         const cart = await Cart.findOne({ userId });
 
+        console.log("userid", userId);
+        console.log("%", pricePercentage);
+        console.log("cart", cart);
+
         if (!cart || cart.items.length === 0 || !pricePercentage) {
             throw new Error("Cart is empty or price percentage not retrieved");
         }
