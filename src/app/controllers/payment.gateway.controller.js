@@ -64,36 +64,42 @@ const generatePaypalForNative = async (req, res) => {
 
 // Capture PayPal payment after user approves
 const capturePaypalForNative = async (req, res) => {
-    const { paymentId, PayerID } = req.query;
-    const userId = req.params.userId;
+    try {
+        const { paymentId, PayerID } = req.query;
+        const userId = req.params.userId;
 
-    const execute_payment_json = {
-        payer_id: PayerID,
-    };
+        const execute_payment_json = {
+            payer_id: PayerID,
+        };
 
-    paypal.payment.execute(paymentId, execute_payment_json, async function (error, payment) {
-        if (error || !payment || payment.state !== "approved") {
-            return res.redirect('https://success.com/payment-failure');
-        }
+        paypal.payment.execute(paymentId, execute_payment_json, async function (error, payment) {
+            if (error || !payment || payment.state !== "approved") {
+                return res.redirect('https://success.com/payment-failure');
+            }
 
-        const transactionId = payment.cart;
-        const currency = payment.transactions[0].amount.currency
+            const transactionId = payment.cart;
+            const currency = payment.transactions[0].amount.currency
 
-        const { markup, amount, packageInfoList, isEmpty } = await retrieveCart(userId);
-        if (isEmpty) return res.redirect('https://success.com/payment-failure');
+            const { markup, amount, packageInfoList, isEmpty } = await retrieveCart(userId);
+            if (isEmpty) return res.redirect('https://success.com/payment-failure');
 
-        const { data } = await axiosInstance.post("/esim/order", {
-            transactionId, amount: String(amount), packageInfoList
+            const { data } = await axiosInstance.post("/esim/order", {
+                transactionId, amount: String(amount), packageInfoList
+            });
+            if (data?.success === false) return res.redirect('https://success.com/payment-failure');
+
+            const { failed } = await savePurchaseAndRemoveCart(userId, markup, {
+                transactionId, currency, amount, packageInfoList, orderNo: data.obj.orderNo
+            });
+            if (failed) return res.redirect('https://success.com/payment-failure');
+
+            return res.redirect('https://success.com/payment-success');
         });
-        if (data?.success === false) return res.redirect('https://success.com/payment-failure');
-
-        const { failed } = await savePurchaseAndRemoveCart(userId, markup, {
-            transactionId, currency, amount, packageInfoList, orderNo: data.obj.orderNo
-        });
-        if (failed) return res.redirect('https://success.com/payment-failure');
-
-        return res.redirect('https://success.com/payment-success');
-    });
+    } catch (error) {
+        console.log(error);
+        console.log("error-message", error.message);
+        return res.redirect('https://success.com/payment-failure');
+    }
 };
 
 const retrieveCart = async (userId) => {
@@ -119,6 +125,7 @@ const retrieveCart = async (userId) => {
         };
     } catch (error) {
         return { isEmpty: true };
+        throw error;
     }
 }
 
@@ -144,7 +151,8 @@ const savePurchaseAndRemoveCart = async (userId, markup, data) => {
 
         return { failed: false }
     } catch (error) {
-        return { failed: true }
+        return { failed: true };
+        throw error;
     }
 }
 
