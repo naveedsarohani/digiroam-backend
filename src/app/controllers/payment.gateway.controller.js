@@ -34,8 +34,8 @@ const generatePaypalForNative = async (req, res) => {
         intent: "sale",
         payer: { payment_method: "paypal" },
         redirect_urls: {
-            return_url: "https://dev.roamdigi.com/payment/paypal/native/execute-payment",
-            cancel_url: "https://dev.roamdigi.com/payment/paypal/native/cancel",
+            return_url: "https://dev.roamdigi.com/api/payment/paypal/native/execute-payment",
+            cancel_url: "https://dev.roamdigi.com/api/payment/paypal/native/cancel",
         },
         transactions: [{
             amount: { total: amount, currency },
