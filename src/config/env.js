@@ -118,6 +118,7 @@ export const auth = {
   facebookClientIdecret: process.env.Facebook_CLIENT_ID_SECRET,
   googleClientId: process.env.GOOGLE_CLIENT_ID,
   googleClientIdSecret: process.env.GOOGLE_CLIENT_SECRET,
+  privateKeyLocation: privateKeyLocation,
   appleClientID: process.env.APPLE_CLIENT_ID,
   appleTeamID: process.env.APPLE_TEAM_ID,
   appleKeyID: process.env.APPLE_KEY_ID,
