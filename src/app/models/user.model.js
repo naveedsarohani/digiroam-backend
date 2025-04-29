@@ -44,7 +44,16 @@ const userSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
-        socialID: {
+        // socialID: {
+        //     type: String,
+        // },
+        facebookID: {
+            type: String,
+        },
+        googleID: {
+            type: String,
+        },
+        appleID: {
             type: String,
         },
         verified: {

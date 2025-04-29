@@ -28,12 +28,12 @@ const facebookLoginStrategy = (passport) => {
                         return done(new Error("Email not available from Facebook"), null);
                     }
 
-                    const query = { $or: [{ socialID: profile._json.id }, { email }] };
+                    const query = { $or: [{ facebookID: profile._json.id }, { email }] };
                     const existUser = await User.findOne(query).select("-password");
                     if (existUser) return done(null, existUser);
 
                     const user = await User.create({
-                        socialID: profile._json.id,
+                        facebookID: profile._json.id,
                         name: profile._json.name,
                         email: email,
                         password: "",
@@ -62,7 +62,7 @@ const googleLoginStrategy = (passport) => {
             },
             async (token, tokenSecret, profile, done) => {
                 try {
-                    const query = { $or: [{ socialID: profile.id }, { email: profile._json.email }] };
+                    const query = { $or: [{ googleID: profile.id }, { email: profile._json.email }] };
                     const existingUser = await User.findOne(query).select("-password");
                     if (existingUser) return done(null, existingUser);
 
@@ -73,7 +73,7 @@ const googleLoginStrategy = (passport) => {
                         accountType: 1,
                         userRole: 1,
                         isSocialUser: true,
-                        socialID: profile.id,
+                        googleID: profile.id,
                         verified: true,
                     });
 
@@ -88,26 +88,26 @@ const appleLoginStrategy = (passport) => {
     passport.use(
         new AppleStrategy(
             {
-                clientID: "com.roamdigi.si",
-                teamID: "4PAJC5AVN9",
-                keyID: "RDFVK4AR7N",
+                clientID: auth.appleClientID,
+                teamID: auth.appleTeamID,
+                keyID: auth.appleKeyID,
                 privateKeyLocation: auth.privateKeyLocation,
+                callbackURL: "https://dev.roamdigi.com/api/auth/apple/callback",
                 scope: ["name", "email"],
                 passReqToCallback: true,
-                callbackURL: "https://dev.roamdigi.com/api/auth/apple/callback",
             },
             async (accessToken, refreshToken, idToken, profile, done) => {
                 try {
-                    const socialID = profile?.id;
+                    const appleID = profile?.id;
                     const email = profile?.email || `${socialID}@appleid.com`;
                     const name = profile?.name?.firstName || "Apple User";
 
-                    const query = { $or: [{ socialID }, { email: email.toLowerCase() }] };
+                    const query = { $or: [{ appleID }, { email: email.toLowerCase() }] };
                     const existingUser = await User.findOne(query).select("-password");
                     if (existingUser) return done(null, existingUser);
 
                     const newUser = await User.create({
-                        socialID,
+                        appleID,
                         name,
                         email: email.toLowerCase(),
                         password: randomString(8),
