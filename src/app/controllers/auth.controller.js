@@ -28,7 +28,8 @@ const facebookLoginStrategy = (passport) => {
                         return done(new Error("Email not available from Facebook"), null);
                     }
 
-                    const existUser = await User.findOne({ email: email }).select("-password");
+                    const query = { $or: [{ socialID: profile._json.id }, { email }] };
+                    const existUser = await User.findOne(query).select("-password");
                     if (existUser) return done(null, existUser);
 
                     const user = await User.create({
@@ -61,7 +62,8 @@ const googleLoginStrategy = (passport) => {
             },
             async (token, tokenSecret, profile, done) => {
                 try {
-                    const existingUser = await User.findOne({ email: profile._json.email }).select("-password");
+                    const query = { $or: [{ socialID: profile.id }, { email: profile._json.email }] };
+                    const existingUser = await User.findOne(query).select("-password");
                     if (existingUser) return done(null, existingUser);
 
                     const user = await User.create({
@@ -96,29 +98,12 @@ const appleLoginStrategy = (passport) => {
             },
             async (accessToken, refreshToken, idToken, profile, done) => {
                 try {
-                    console.log("Apple ID Token:", idToken);
-                    console.log("Apple Access Token:", accessToken);
-                    console.log("Apple Refresh", refreshToken);
-                    console.log("Apple Profile>profile:", profile?.profile);
-                    console.log("Apple Profile:", profile);
-
                     const socialID = profile?.id;
                     const email = profile?.email || `${socialID}@appleid.com`;
                     const name = profile?.name?.firstName || "Apple User";
 
-                    console.log("Apple Profile email:", email);
-                    console.log("Apple Profile socialID:", socialID);
-                    console.log("Apple Profile name:", name);
-
-                    // if (!socialID) {
-                    //     console.error("No socialID from Apple.");
-                    //     return done(new Error("Invalid Apple profile response"), null);
-                    // }
-
-                    const existingUser = await User.findOne({
-                        $or: [{ email: email.toLowerCase() }, { socialID }],
-                    }).select("-password");
-
+                    const query = { $or: [{ socialID }, { email: email.toLowerCase() }] };
+                    const existingUser = await User.findOne(query).select("-password");
                     if (existingUser) return done(null, existingUser);
 
                     const newUser = await User.create({
