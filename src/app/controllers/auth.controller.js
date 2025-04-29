@@ -29,8 +29,14 @@ const facebookLoginStrategy = (passport) => {
                     }
 
                     const query = { $or: [{ facebookID: profile._json.id }, { email }] };
-                    const existUser = await User.findOne(query).select("-password");
-                    if (existUser) return done(null, existUser);
+                    const existingUser = await User.findOne(query).select("-password");
+                    if (existingUser) {
+                        if (!existingUser?.facebookID) {
+                            existingUser.facebookID = profile._json.id;
+                            existingUser.save();
+                        }
+                        return done(null, existingUser)
+                    };
 
                     const user = await User.create({
                         facebookID: profile._json.id,
@@ -64,7 +70,13 @@ const googleLoginStrategy = (passport) => {
                 try {
                     const query = { $or: [{ googleID: profile.id }, { email: profile._json.email }] };
                     const existingUser = await User.findOne(query).select("-password");
-                    if (existingUser) return done(null, existingUser);
+                    if (existingUser) {
+                        if (!existingUser?.googleID) {
+                            existingUser.googleID = profile.id;
+                            existingUser.save();
+                        }
+                        return done(null, existingUser)
+                    };
 
                     const user = await User.create({
                         name: profile._json.name,
@@ -104,7 +116,13 @@ const appleLoginStrategy = (passport) => {
 
                     const query = { $or: [{ appleID }, { email: email.toLowerCase() }] };
                     const existingUser = await User.findOne(query).select("-password");
-                    if (existingUser) return done(null, existingUser);
+                    if (existingUser) {
+                        if (!existingUser?.appleID) {
+                            existingUser.appleID = appleID;
+                            existingUser.save();
+                        }
+                        return done(null, existingUser)
+                    };
 
                     const newUser = await User.create({
                         appleID,
