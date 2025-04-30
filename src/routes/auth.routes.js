@@ -33,10 +33,8 @@ authRoutes.post("/apple/callback",
   authController.socialCallback
 );
 
-// direct login routes
-// authRoutes.post("/login",
-//   schema.validator(authSchema.loginSchema),
-//   authController.validationLogin
-// )
+authRoutes.post("/native/callback",
+  authController.nativeSociaSigninOrSignup
+);
 
 export default authRoutes;

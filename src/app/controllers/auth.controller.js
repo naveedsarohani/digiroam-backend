@@ -42,10 +42,9 @@ const facebookLoginStrategy = (passport) => {
                         facebookID: profile._json.id,
                         name: profile._json.name,
                         email: email,
-                        password: "",
+                        password: randomString(8),
                         accountType: 1,
                         userRole: 1,
-                        isSocialUser: true,
                         verified: true,
                     });
 
@@ -84,7 +83,6 @@ const googleLoginStrategy = (passport) => {
                         password: randomString(8),
                         accountType: 1,
                         userRole: 1,
-                        isSocialUser: true,
                         googleID: profile.id,
                         verified: true,
                     });
@@ -131,7 +129,6 @@ const appleLoginStrategy = (passport) => {
                         password: randomString(8),
                         accountType: 1,
                         userRole: 1,
-                        isSocialUser: true,
                         verified: true,
                     });
 
@@ -162,6 +159,43 @@ const socialCallback = async (req, res) => {
         res.redirect(`${server.origin}/login?error=${encodeURIComponent(error.message)}`);
     }
 };
+// Express route
+const nativeSociaSigninOrSignup = async (req, res) => {
+    try {
+        const { provider, email, name, providerId } = req.body;
+
+        if (!email || !provider || !providerId) {
+            return res.response(400, "Missing required fields");
+        }
+
+        const socialID = `${provider}ID`;
+        let user = await User.findOne({ $or: [{ [socialID]: providerId }, { email }] }).select("-password");
+
+        if (user && !user[socialID]) {
+            user[socialID] = providerId;
+            await user.save();
+            user = await User.findById(user._id).select("-password");
+        }
+
+        if (!user) {
+            user = await User.create({
+                name,
+                email,
+                password: randomString(8),
+                accountType: 1,
+                userRole: 1,
+                verified: true,
+                [socialID]: providerId
+            });
+        }
+
+        const accessToken = await user.generateAccessToken();
+        return res.response(200, "Login successfully", { accessToken, user });
+
+    } catch (error) {
+        return res.response(500, "Internal server error", { error: error.message });
+    }
+}
 
 const validationLogin = async (req, res) => {
     try {
@@ -328,6 +362,7 @@ export default {
     googleLoginStrategy,
     appleLoginStrategy,
     socialCallback,
+    nativeSociaSigninOrSignup,
     validationLogin,
     register,
     verifyOtp,
