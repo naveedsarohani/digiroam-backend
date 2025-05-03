@@ -104,38 +104,38 @@ export const stripePaymentIntentForNative = async (req, res) => {
             { customer: customer.id }, { apiVersion: '2025-04-30.basil' }
         );
 
-        const { markup, amount, packageInfoList, isEmpty } = await retrieveCart(req.user._id);
-        if (isEmpty) throw new error("Cart is empty");
+        // const { markup, amount, packageInfoList, isEmpty } = await retrieveCart(req.user._id);
+        // if (isEmpty) throw new error("Cart is empty");
 
-        const paymentAmount = packageInfoList.reduce((total, { price, count }) => (
-            total + getPriceWithMarkup(price / 10000, markup) * count
-        ), 0).toFixed(2);
+        // const paymentAmount = packageInfoList.reduce((total, { price, count }) => (
+        //     total + getPriceWithMarkup(price / 10000, markup) * count
+        // ), 0).toFixed(2);
 
-        const paymentIntent = await stripe.paymentIntents.create({
-            amount: Math.round(paymentAmount * 100), currency: "USD",
-            metadata: {
-                totalitems: packageInfoList.length,
-                orderSummary: packageInfoList.map((item) => `${item.packageCode} x${item.count}`).join(", ").slice(0, 500),
-            },
-            customer: customer.id,
-            automatic_payment_methods: {
-                enabled: true,
-            },
-        });
+        // const paymentIntent = await stripe.paymentIntents.create({
+        //     amount: Math.round(paymentAmount * 100), currency: "USD",
+        //     metadata: {
+        //         totalitems: packageInfoList.length,
+        //         orderSummary: packageInfoList.map((item) => `${item.packageCode} x${item.count}`).join(", ").slice(0, 500),
+        //     },
+        //     customer: customer.id,
+        //     automatic_payment_methods: {
+        //         enabled: true,
+        //     },
+        // });
 
-        const transactionId = paymentIntent.id;
-        const { data } = await axiosInstance.post("/esim/order", {
-            transactionId, amount: String(amount), packageInfoList
-        });
-        if (data?.success === false) {
-            console.log(data);
-            throw new Error("failed to make purchase eSim");
-        };
+        // const transactionId = paymentIntent.id;
+        // const { data } = await axiosInstance.post("/esim/order", {
+        //     transactionId, amount: String(amount), packageInfoList
+        // });
+        // if (data?.success === false) {
+        //     console.log(data);
+        //     throw new Error("failed to make purchase eSim");
+        // };
 
-        const { failed } = await savePurchaseAndRemoveCart(userId, markup, {
-            transactionId, currency: "USD", amount, packageInfoList, orderNo: data.obj.orderNo
-        });
-        if (failed) throw new Error("failed to save payment or clearing cart");
+        // const { failed } = await savePurchaseAndRemoveCart(userId, markup, {
+        //     transactionId, currency: "USD", amount, packageInfoList, orderNo: data.obj.orderNo
+        // });
+        // if (failed) throw new Error("failed to save payment or clearing cart");
 
         return res.response(200, "PaymentIntent created", {
             paymentIntent: paymentIntent.client_secret,
