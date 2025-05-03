@@ -127,7 +127,10 @@ export const stripePaymentIntentForNative = async (req, res) => {
         const { data } = await axiosInstance.post("/esim/order", {
             transactionId, amount: String(amount), packageInfoList
         });
-        if (data?.success === false) throw new Error("failed to make purchase eSim");
+        if (data?.success === false) {
+            console.log(data);
+            throw new Error("failed to make purchase eSim");
+        };
 
         const { failed } = await savePurchaseAndRemoveCart(userId, markup, {
             transactionId, currency: "USD", amount, packageInfoList, orderNo: data.obj.orderNo
