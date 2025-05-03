@@ -136,6 +136,7 @@ export const stripePaymentIntentForNative = async (req, res) => {
         // if (failed) throw new Error("failed to save payment or clearing cart");
 
         return res.response(200, "PaymentIntent created", {
+            transactionId: paymentIntent.id,
             paymentIntent: paymentIntent.client_secret,
             ephemeralKey: ephemeralKey.secret,
             customer: customer.id,
