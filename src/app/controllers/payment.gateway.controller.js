@@ -8,6 +8,7 @@ import axiosInstance from "../../utils/helpers/axios.instance.js";
 import settingService from "../services/setting.service.js";
 import getPriceWithMarkup from "../../utils/helpers/get.price.with.markup.js";
 import paymentService from "../services/payment.service.js";
+import Buynow from "../models/buynow.model.js";
 
 // configure paypal for payments from mobile app
 paypal.configure({
@@ -22,7 +23,7 @@ const paypalPaymentUrlHandler = async (req, res) => (
 
 // Create a PayPal payment
 const generatePaypalForNative = async (req, res) => {
-    const { amount, currency } = req.body;
+    const { amount, currency, type = "cart" } = req.body;
 
     if (!amount || !currency) {
         return res.response(400, "Amount and currency are required");
@@ -32,8 +33,8 @@ const generatePaypalForNative = async (req, res) => {
         intent: "sale",
         payer: { payment_method: "paypal" },
         redirect_urls: {
-            return_url: `https://dev.roamdigi.com/api/payment/paypal/native/execute-payment?userId=${req.user._id}`,
-            cancel_url: `https://dev.roamdigi.com/api/payment/paypal/native/cancel?userId=${req.user._id}`,
+            return_url: `https://dev.roamdigi.com/api/payment/paypal/native/execute-payment?userId=${req.user._id}&type=${type}`,
+            cancel_url: `https://dev.roamdigi.com/api/payment/paypal/native/cancel?userId=${req.user._id}&type=${type}`,
         },
         transactions: [{
             amount: { total: amount, currency },
@@ -59,7 +60,7 @@ const generatePaypalForNative = async (req, res) => {
 // Capture PayPal payment after user approves
 const capturePaypalForNative = async (req, res) => {
     try {
-        const { paymentId, PayerID, userId } = req.query;
+        const { paymentId, PayerID, userId, type } = req.query;
 
         const execute_payment_json = {
             payer_id: PayerID,
@@ -73,18 +74,17 @@ const capturePaypalForNative = async (req, res) => {
             const transactionId = payment?.cart;
             const currency = payment?.transactions[0]?.amount?.currency
 
-            const { markup, amount, packageInfoList, isEmpty } = await retrieveCart(userId);
-            if (isEmpty) throw new Error("The cart is empty");
+            const { markup, amount, packageInfoList, isEmpty } = await retrieveCart(userId, type);
+            if (isEmpty) throw new Error("The cart/buynow is empty");
 
             const { data } = await axiosInstance.post("/esim/order", {
                 transactionId, amount: String(amount), packageInfoList
             });
-
             if (data?.success === false) throw new Error("failed to purchase eSim");
 
             const { failed } = await savePurchaseAndRemoveCart(userId, markup, {
                 transactionId, currency, amount, packageInfoList, orderNo: data.obj.orderNo
-            });
+            }, type);
             if (failed) throw new Error("Failed to save payment or clearing cart");
 
             return res.redirect('https://success.com/payment-success');
@@ -218,25 +218,42 @@ const capturePaypalOrder = async (req, res) => {
 };
 
 // utility function to retrieve paypal access token
-const retrieveCart = async (userId) => {
+const retrieveCart = async (userId, type = "cart") => {
     try {
         const { pricePercentage } = await settingService.retrieve();
-        const cart = await Cart.findOne({ userId });
 
-        if (!cart || cart.items.length === 0 || !pricePercentage) {
-            throw new Error("Cart is empty or price percentage not retrieved");
+        let packageInfoList = [];
+        let amount = 0;
+
+        if (type == "cart") {
+            const cart = await Cart.findOne({ userId });
+
+            if (!cart || cart.items.length === 0 || !pricePercentage) {
+                throw new Error("Cart is empty or price percentage not retrieved");
+            }
+            packageInfoList = cart.items.map((item) => ({
+                packageCode: item.productId,
+                count: item.productQuantity,
+                price: item.productPrice * 10000,
+            }));
+
+            amount = cart.totalPrice * 10000
+        } else {
+            const buynow = await Buynow.findOne({ userId });
+
+            if (!buynow || !pricePercentage) {
+                throw new Error("Buynow is empty or price percentage not retrieved");
+            }
+
+            const { packageCode, price, count } = buynow;
+            packageInfoList = [{ packageCode, price: price * 10000, count }];
+
+            amount = packageInfoList[0].price;
         }
-
-        const packageInfoList = cart.items.map((item) => ({
-            packageCode: item.productId,
-            count: item.productQuantity,
-            price: item.productPrice * 10000,
-        }));
 
         return {
             markup: pricePercentage,
-            amount: cart.totalPrice * 10000,
-            packageInfoList,
+            amount, packageInfoList,
             isEmpty: false
         };
     } catch (error) {
@@ -244,7 +261,7 @@ const retrieveCart = async (userId) => {
     }
 }
 
-const savePurchaseAndRemoveCart = async (userId, markup, data) => {
+const savePurchaseAndRemoveCart = async (userId, markup, data, type = "cart") => {
     try {
         if ((await paymentService.retrieveOne({ transactionId: data.transactionId }))) {
             throw new Error("Payment exists");
@@ -254,15 +271,23 @@ const savePurchaseAndRemoveCart = async (userId, markup, data) => {
             { ...pkg, price: (getPriceWithMarkup(pkg.price / 10000, markup) * 10000) }
         ));
 
-        data.amount = data.packageInfoList.reduce((total, { price, count }) => (
-            total + Number(getPriceWithMarkup(price / 10000, markup) * 10000).toFixed(2) * count
-        ), 0);
+        if (type == "cart") {
+            data.amount = data.packageInfoList.reduce((total, { price, count }) => (
+                total + Number(getPriceWithMarkup(price / 10000, markup) * 10000).toFixed(2) * count
+            ), 0);
+        } else {
+            data.amount = data.packageInfoList[0].price
+        }
 
         if (!(await paymentService.create({ userId, ...data }))) {
             throw new Error("Payment exists");
         }
 
-        await Cart.findOneAndDelete({ userId });
+        if (type == "cart") {
+            await Cart.findOneAndDelete({ userId });
+        } else {
+            await Buynow.findOneAndDelete({ userId });
+        }
 
         return { failed: false }
     } catch (error) {

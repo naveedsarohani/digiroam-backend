@@ -15,6 +15,7 @@ import paymentGatewayRoutes from "./routes/payment.gateway.routes.js";
 import paymentRoutes from "./routes/payment.routes.js";
 import settingRoutes from "./routes/setting.routes.js";
 import FavouritePlanRoutes from "./routes/favourite.plans.routes.js";
+import buynowRoutes from "./routes/buynow.routes.js";
 
 // registered routes
 const apiRoutes = Router({ mergeParams: true });
@@ -27,6 +28,7 @@ apiRoutes.use("/esim-plans", esimPlanRoutes);
 apiRoutes.use("/otp-verification", otpVerificationRoutes);
 apiRoutes.use("/eSim", eSimRoute);
 apiRoutes.use("/payment", paymentGatewayRoutes);
+apiRoutes.use("/buynow", buynowRoutes);
 apiRoutes.use("/cart", cartRoute);
 apiRoutes.use("/paymentSave", paymentRoutes);
 apiRoutes.use("/users", userRoutes);

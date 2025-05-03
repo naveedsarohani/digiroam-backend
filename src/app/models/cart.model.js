@@ -17,7 +17,7 @@ const CartSchema = new mongoose.Schema(
         items: [
             {
                 productId: {
-                    type: String,
+                    type: String, 
                     required: true,
                 },
                 productName: {
