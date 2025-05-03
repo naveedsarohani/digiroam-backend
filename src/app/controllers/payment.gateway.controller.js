@@ -237,7 +237,7 @@ const retrieveCart = async (userId, type = "cart") => {
                 price: item.productPrice * 10000,
             }));
 
-            amount = cart.items.reduce((total, { price, count }) => total + (price * count), 0)
+            amount = cart.totalPrice * 10000;
         } else {
             const buynow = await Buynow.findOne({ userId });
 
@@ -275,9 +275,10 @@ const savePurchaseAndRemoveCart = async (userId, markup, data, type = "cart") =>
             data.amount = data.packageInfoList.reduce((total, { price, count }) => (
                 total + Number(getPriceWithMarkup(price / 10000, markup) * 10000) * count
             ), 0).toFixed(2);
+
             data.packageInfoList = packageInfoList;
         } else {
-            data.amount = data.packageInfoList[0].price;
+            data.amount = packageInfoList[0].price;
             data.packageInfoList = packageInfoList;
         }
 
