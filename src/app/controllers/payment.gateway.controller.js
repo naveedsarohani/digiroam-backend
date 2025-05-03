@@ -99,6 +99,8 @@ const capturePaypalForNative = async (req, res) => {
 const stripe = new Stripe(payments.stripe.secretKey);
 export const stripePaymentIntentForNative = async (req, res) => {
     try {
+        const { amount, currency } = req.body;
+
         const customer = await stripe.customers.create();
         const ephemeralKey = await stripe.ephemeralKeys.create(
             { customer: customer.id }, { apiVersion: '2025-04-30.basil' }
@@ -111,17 +113,13 @@ export const stripePaymentIntentForNative = async (req, res) => {
         //     total + getPriceWithMarkup(price / 10000, markup) * count
         // ), 0).toFixed(2);
 
-        // const paymentIntent = await stripe.paymentIntents.create({
-        //     amount: Math.round(paymentAmount * 100), currency: "USD",
-        //     metadata: {
-        //         totalitems: packageInfoList.length,
-        //         orderSummary: packageInfoList.map((item) => `${item.packageCode} x${item.count}`).join(", ").slice(0, 500),
-        //     },
-        //     customer: customer.id,
-        //     automatic_payment_methods: {
-        //         enabled: true,
-        //     },
-        // });
+        const paymentIntent = await stripe.paymentIntents.create({
+            amount: Math.round(amount * 100), currency,
+            customer: customer.id,
+            automatic_payment_methods: {
+                enabled: true,
+            },
+        });
 
         // const transactionId = paymentIntent.id;
         // const { data } = await axiosInstance.post("/esim/order", {
