@@ -15,4 +15,4 @@ buynowRoutes.get("/clear",
     buynowController.clear
 );
 
-export default { buynowRoutes };
+export default buynowRoutes;
