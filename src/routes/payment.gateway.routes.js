@@ -33,4 +33,9 @@ paymentGatewayRoutes.post("/stripe/stripePaymentIntent",
   paymentGatewayController.stripePaymentIntent
 );
 
+paymentGatewayRoutes.post("/stripe/stripePaymentIntent/native",
+  auth.authenticate,
+  paymentGatewayController.stripePaymentIntentForNative
+);
+
 export default paymentGatewayRoutes;

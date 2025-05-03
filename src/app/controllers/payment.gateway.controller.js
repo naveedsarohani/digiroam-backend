@@ -16,15 +16,9 @@ paypal.configure({
     client_secret: payments.paypal.secretKey,
 });
 
-const paypalPaymentUrlHandler = async (req, res) => {
-    try {
-        // return res.response(200, `The payment was ${req.params.status}`)
-        return res.redirect('https://success.com/payment-failure');
-    } catch (error) {
-        // return res.response(500, `The payment was failed`, { error: error.message });
-        return res.redirect('https://success.com/payment-failure');
-    }
-}
+const paypalPaymentUrlHandler = async (req, res) => (
+    res.redirect('https://success.com/payment-failure')
+);
 
 // Create a PayPal payment
 const generatePaypalForNative = async (req, res) => {
@@ -73,37 +67,85 @@ const capturePaypalForNative = async (req, res) => {
 
         paypal.payment.execute(paymentId, execute_payment_json, async function (error, payment) {
             if (error || !payment || payment.state !== "approved") {
-                console.log(error);
-                return res.redirect('https://success.com/payment-failure');
+                throw new Error(error);
             }
 
             const transactionId = payment?.cart;
             const currency = payment?.transactions[0]?.amount?.currency
 
             const { markup, amount, packageInfoList, isEmpty } = await retrieveCart(userId);
-            if (isEmpty) return res.redirect('https://success.com/payment-failure');
+            if (isEmpty) throw new Error("The cart is empty");
 
             const { data } = await axiosInstance.post("/esim/order", {
                 transactionId, amount: String(amount), packageInfoList
             });
 
-            if (data?.success === false) return res.redirect('https://success.com/payment-failure');
+            if (data?.success === false) throw new Error("failed to purchase eSim");
 
             const { failed } = await savePurchaseAndRemoveCart(userId, markup, {
                 transactionId, currency, amount, packageInfoList, orderNo: data.obj.orderNo
             });
-            if (failed) return res.redirect('https://success.com/payment-failure');
+            if (failed) throw new Error("Failed to save payment or clearing cart");
 
             return res.redirect('https://success.com/payment-success');
         });
     } catch (error) {
         console.log(error);
         console.log("error-message", error.message);
-        return res.redirect('https://success.com/payment-failure');
+        return res.redirect('https://success.com/payment-failure')
     }
 };
 
 const stripe = new Stripe(payments.stripe.secretKey);
+export const stripePaymentIntentForNative = async (req, res) => {
+    try {
+        const customer = await stripe.customers.create();
+        const ephemeralKey = await stripe.ephemeralKeys.create(
+            { customer: customer.id }, { apiVersion: '2025-04-30.basil' }
+        );
+
+        const { markup, amount, packageInfoList, isEmpty } = await retrieveCart(req.user._id);
+        if (isEmpty) throw new error("Cart is empty");
+
+        const paymentAmount = packageInfoList.reduce((total, { price, count }) => (
+            total + getPriceWithMarkup(price / 10000, markup) * count
+        ), 0).toFixed(2);
+
+        const paymentIntent = await stripe.paymentIntents.create({
+            amount: Math.round(paymentAmount * 100), currency: "USD",
+            metadata: {
+                totalitems: packageInfoList.length,
+                orderSummary: packageInfoList.map((item) => `${item.packageCode} x${item.count}`).join(", ").slice(0, 500),
+            },
+            customer: customer.id,
+            automatic_payment_methods: {
+                enabled: true,
+            },
+        });
+
+        const transactionId = paymentIntent.id;
+        const { data } = await axiosInstance.post("/esim/order", {
+            transactionId, amount: String(amount), packageInfoList
+        });
+        if (data?.success === false) throw new Error("failed to make purchase eSim");
+
+        const { failed } = await savePurchaseAndRemoveCart(userId, markup, {
+            transactionId, currency: "USD", amount, packageInfoList, orderNo: data.obj.orderNo
+        });
+        if (failed) throw new Error("failed to save payment or clearing cart");
+
+        return res.response(200, "PaymentIntent created", {
+            paymentIntent: paymentIntent.client_secret,
+            ephemeralKey: ephemeralKey.secret,
+            customer: customer.id,
+            publishableKey: payments.stripe.publicKey
+        });
+    } catch (error) {
+        console.error("Stripe PaymentIntent Error:", error);
+        return res.response(400, "Failed to create PaymentIntent", { error: error.message });
+    }
+};
+
 const stripePaymentIntent = async (req, res) => {
     try {
         const { amount, currency = "usd", items } = req.body;
@@ -176,7 +218,6 @@ const capturePaypalOrder = async (req, res) => {
 // utility function to retrieve paypal access token
 const retrieveCart = async (userId) => {
     try {
-        console.log("userId", userId);
         const { pricePercentage } = await settingService.retrieve();
         const cart = await Cart.findOne({ userId });
 
@@ -263,5 +304,6 @@ export default {
     capturePaypalForNative,
     generatePaypalOrder,
     capturePaypalOrder,
-    stripePaymentIntent
+    stripePaymentIntent,
+    stripePaymentIntentForNative
 };
