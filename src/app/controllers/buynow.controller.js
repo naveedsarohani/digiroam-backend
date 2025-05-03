@@ -4,7 +4,7 @@ const upsert = async (req, res) => {
     try {
         const { productId: packageCode, productPrice: price, productQuantity: count } = req.body;
 
-        const busynow = await Buynow.findOneAndUpdate(
+        const buynow = await Buynow.findOneAndUpdate(
             { userId: req.user._id }, { packageCode, price, count }, { upsert: true, setDefaultsOnInsert: true }
         );
 
