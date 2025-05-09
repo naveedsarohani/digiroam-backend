@@ -213,7 +213,7 @@ const capturePaypalOrder = async (req, res) => {
         });
 
     } catch (error) {
-        return res.response(500, "Failed make payment", { error: error.message });
+        return res.response(500, "Failed to make payment", { error: error.message });
     }
 };
 
@@ -322,11 +322,18 @@ const retrievePaypalAccessToken = async () => {
 const paypalAxios = axios.create({
     baseURL: payments.paypal.baseUrl,
     headers: {
-        Authorization: `Bearer ${await retrievePaypalAccessToken()}`,
         "Content-Type": "application/json",
     },
 });
 
+paypalAxios.interceptors.request.use(
+    async (config) => {
+        const accessToken = await retrievePaypalAccessToken();
+        config.headers.Authorization = `Bearer ${accessToken}`;
+        return config;
+    },
+    (error) => Promise.reject(error)
+);
 
 export default {
     paypalPaymentUrlHandler,
