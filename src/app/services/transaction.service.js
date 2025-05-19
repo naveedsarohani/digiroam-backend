@@ -2,7 +2,7 @@ import Transaction from "../models/transaction.model.js";
 
 const retrieve = async (userId) => {
     try {
-        return await Transaction.findOne({ userId });
+        return await Transaction.find({ userId });
     } catch (error) { throw error; }
 };
 

@@ -9,7 +9,7 @@ import axiosInstance from "../../utils/helpers/axios.instance.js";
 const balance = async (req, res) => {
     try {
         const { balance } = req.user;
-        return res.response(200, "Funds have been added to your wallet", { balance });
+        return res.response(200, "Your current wallet balance", { balance });
     } catch (error) {
         return res.response(500, "Internal server error", { error: error.message });
     }
