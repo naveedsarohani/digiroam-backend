@@ -17,7 +17,7 @@ const retrieveMany = async (query) => {
     try {
         if (!query || typeof query !== "object") throw new Error("Invalid query parameters");
 
-        return await Payment.find(query).populate(populateOptions.payment).lean();
+        return await Payment.find(query).populate(populateOptions.payment).sort({ createdAt: -1 }).lean();
     } catch (error) {
         throw new Error(`Error retrieving payment: ${error.message}`);
     }
