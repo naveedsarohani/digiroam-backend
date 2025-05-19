@@ -2,7 +2,7 @@ import Country from "../models/country.model.js";
 
 const index = async (req, res) => {
     try {
-        const countries = await Country.find();
+        const countries = await Country.find().sort({ countryName: 1 });
         return res.response(200, "Successfully fetched countries", { countries });
     } catch (error) {
         return res.response(500, "Failed to fetch countries", { error: error.message });

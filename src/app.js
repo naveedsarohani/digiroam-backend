@@ -16,6 +16,7 @@ import paymentRoutes from "./routes/payment.routes.js";
 import settingRoutes from "./routes/setting.routes.js";
 import FavouritePlanRoutes from "./routes/favourite.plans.routes.js";
 import buynowRoutes from "./routes/buynow.routes.js";
+import walletRoutes from "./routes/wallet.routes.js";
 
 // registered routes
 const apiRoutes = Router({ mergeParams: true });
@@ -36,6 +37,7 @@ apiRoutes.use("/email", emailRoutes);
 apiRoutes.use("/email-templates", emailTemplateRoutes);
 apiRoutes.use("/settings", settingRoutes);
 apiRoutes.use("/favourite-plans", FavouritePlanRoutes);
+apiRoutes.use("/wallet", walletRoutes);
 
 // export to register
 export default apiRoutes;

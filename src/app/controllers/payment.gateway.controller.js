@@ -44,7 +44,6 @@ const generatePaypalForNative = async (req, res) => {
 
     paypal.payment.create(create_payment_json, function (error, payment) {
         if (error) {
-            console.log(error);
             return res.response(500, "Error in payment creation");
         } else {
             if (payment.state === "created") {
@@ -106,13 +105,6 @@ export const stripePaymentIntentForNative = async (req, res) => {
             { customer: customer.id }, { apiVersion: '2025-04-30.basil' }
         );
 
-        // const { markup, amount, packageInfoList, isEmpty } = await retrieveCart(req.user._id);
-        // if (isEmpty) throw new error("Cart is empty");
-
-        // const paymentAmount = packageInfoList.reduce((total, { price, count }) => (
-        //     total + getPriceWithMarkup(price / 10000, markup) * count
-        // ), 0).toFixed(2);
-
         const paymentIntent = await stripe.paymentIntents.create({
             amount: Math.round(amount * 100), currency,
             customer: customer.id,
@@ -120,20 +112,6 @@ export const stripePaymentIntentForNative = async (req, res) => {
                 enabled: true,
             },
         });
-
-        // const transactionId = paymentIntent.id;
-        // const { data } = await axiosInstance.post("/esim/order", {
-        //     transactionId, amount: String(amount), packageInfoList
-        // });
-        // if (data?.success === false) {
-        //     console.log(data);
-        //     throw new Error("failed to make purchase eSim");
-        // };
-
-        // const { failed } = await savePurchaseAndRemoveCart(userId, markup, {
-        //     transactionId, currency: "USD", amount, packageInfoList, orderNo: data.obj.orderNo
-        // });
-        // if (failed) throw new Error("failed to save payment or clearing cart");
 
         return res.response(200, "PaymentIntent created", {
             transactionId: paymentIntent.id,
@@ -319,7 +297,7 @@ const retrievePaypalAccessToken = async () => {
 };
 
 // axios service for handling paypal payments requests
-const paypalAxios = axios.create({
+export const paypalAxios = axios.create({
     baseURL: payments.paypal.baseUrl,
     headers: {
         "Content-Type": "application/json",

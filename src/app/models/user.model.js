@@ -7,6 +7,10 @@ import { application } from "../../config/env.js";
 
 const userSchema = new mongoose.Schema(
     {
+        countryID: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Country",
+        },
         name: {
             type: String,
             required: true,
@@ -20,10 +24,6 @@ const userSchema = new mongoose.Schema(
         address: {
             type: String
         },
-        countryID: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Country",
-        },
         accountType: {
             type: Number,
             required: true,
@@ -32,21 +32,14 @@ const userSchema = new mongoose.Schema(
         },
         balance: {
             type: Number,
-            default: 0.0,
+            default: 0.00,
         },
         userRole: {
             type: Number,
             required: true,
-            enum: [1, 2], // 2 for admin account
+            enum: [1, 2],
             default: 1
         },
-        isSocialUser: {
-            type: Boolean,
-            default: false,
-        },
-        // socialID: {
-        //     type: String,
-        // },
         facebookID: {
             type: String,
         },
@@ -61,6 +54,7 @@ const userSchema = new mongoose.Schema(
             default: false,
         },
 
+        // hidden fields
         password: {
             type: String,
         },
