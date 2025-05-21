@@ -4,6 +4,7 @@ import transactionService from "../services/transaction.service.js";
 import { payments } from "../../config/env.js";
 import { paypalAxios } from "./payment.gateway.controller.js";
 import userService from "../services/user.service.js";
+import paymentService from "../services/payment.service.js";
 import axiosInstance from "../../utils/helpers/axios.instance.js";
 
 const balance = async (req, res) => {
@@ -58,22 +59,26 @@ const useFunds = async (req, res) => {
 
 const cancelAndRefund = async (req, res) => {
     try {
-        const { esimTranNo, transactionId, amount, currency } = req.body;
+        const { esimTranNo, transactionId } = req.body;
         const esim = await axiosInstance.post("/esim/cancel", { esimTranNo });
+
+	const payment = paymentService.retrieveOne({ transactionId });
+	if(!payment) return res.response(404, "Payment not found with provided transaction ID");
+
 
         if (esim.data?.success == false) {
             return res.response(400, "Failed to cancel the profile.", { error: esim.data?.errorCode });
         };
 
         const { id: userId, balance } = req.user;
-        const updatedBalance = (parseFloat(balance) + parseFloat(amount));
+        const updatedBalance = (parseFloat(balance) + parseFloat(payment.amount / 1000));
 
         const user = await userService.update(userId, { balance: updatedBalance });
         if (!user) throw new Error("Failed to make re-fund");
 
         const source = transactionId.includes("pi_") ? "STRIPE" : "PAYPAL";
         const transaction = await transactionService.create({
-            userId, transactionId, amount, currency, source, type: "REFUND"
+            userId, transactionId, amount, currency: payment.currency, source, type: "REFUND"
         });
         if (!transaction) throw new Error("Failed to push transaction history");
 
