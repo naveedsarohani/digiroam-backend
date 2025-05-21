@@ -42,13 +42,13 @@ const useFunds = async (req, res) => {
         const { transactionId, amount, currency } = req.body;
 
         const { id: userId, balance } = req.user;
-        const updatedBalance = (parseFloat(balance) - parseFloat(amount));
+        const updatedBalance = (parseFloat(balance) - parseFloat(amount / 10000));
 
         const user = await userService.update(userId, { balance: updatedBalance });
         if (!user) throw new Error("Failed to deduct funds from the wallet");
 
         const transaction = await transactionService.create({
-            userId, transactionId, amount, currency, source: "WALLET", type: "PURCHASE"
+            userId, transactionId, amount: amount / 10000, currency, source: "WALLET", type: "PURCHASE"
         });
         if (!transaction) throw new Error("Failed to push transaction history");
 
