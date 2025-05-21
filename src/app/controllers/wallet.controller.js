@@ -70,14 +70,14 @@ const cancelAndRefund = async (req, res) => {
         };
 
         const { id: userId, balance } = req.user;
-        const updatedBalance = (parseFloat(balance) + parseFloat(payment.amount / 1000));
+        const updatedBalance = (parseFloat(balance) + parseFloat(payment.amount / 10000));
 
         const user = await userService.update(userId, { balance: updatedBalance });
         if (!user) throw new Error("Failed to make re-fund");
 
         const source = transactionId.includes("pi_") ? "STRIPE" : "PAYPAL";
         const transaction = await transactionService.create({
-            userId, transactionId, amount: payment.amount / 1000, currency: payment.currency, source, type: "REFUND"
+            userId, transactionId, amount: payment.amount / 10000, currency: payment.currency, source, type: "REFUND"
         });
         if (!transaction) throw new Error("Failed to push transaction history");
 
