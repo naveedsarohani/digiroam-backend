@@ -40,6 +40,7 @@ const deposit = async (req, res) => {
 const useFunds = async (req, res) => {
     try {
         const { transactionId, amount, currency } = req.body;
+
         const { id: userId, balance } = req.user;
         const updatedBalance = (parseFloat(balance) - parseFloat(amount));
 
