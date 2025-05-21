@@ -60,12 +60,11 @@ const useFunds = async (req, res) => {
 const cancelAndRefund = async (req, res) => {
     try {
         const { esimTranNo, transactionId } = req.body;
+
+        const payment = await paymentService.retrieveOne({ transactionId });
+        if (!payment) return res.response(404, "Payment not found with provided transaction ID");
+
         const esim = await axiosInstance.post("/esim/cancel", { esimTranNo });
-
-	const payment = paymentService.retrieveOne({ transactionId });
-	if(!payment) return res.response(404, "Payment not found with provided transaction ID");
-
-
         if (esim.data?.success == false) {
             return res.response(400, "Failed to cancel the profile.", { error: esim.data?.errorCode });
         };
@@ -78,7 +77,7 @@ const cancelAndRefund = async (req, res) => {
 
         const source = transactionId.includes("pi_") ? "STRIPE" : "PAYPAL";
         const transaction = await transactionService.create({
-            userId, transactionId, amount, currency: payment.currency, source, type: "REFUND"
+            userId, transactionId, amount: payment.amount / 1000, currency: payment.currency, source, type: "REFUND"
         });
         if (!transaction) throw new Error("Failed to push transaction history");
 
