@@ -42,6 +42,10 @@ const useFunds = async (req, res) => {
         const { transactionId, amount, currency } = req.body;
 
         const { id: userId, balance } = req.user;
+        if (parseFloat(balance) < parseFloat(amount / 10000)) {
+            return res.response(400, "You don't have enough fund to make this purchase");
+        }
+        
         const updatedBalance = (parseFloat(balance) - parseFloat(amount / 10000));
 
         const user = await userService.update(userId, { balance: updatedBalance });
