@@ -7,7 +7,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // function to generate and return an EJS template for email body content
 const retrieveHtmlTemplate = (template, data) => {
     const templatePath = path.join(__dirname, '../../views', `${template}.ejs`);
-    return ejs.renderFile(templatePath, data);
+    return ejs.renderFile(templatePath, { ...data, BASEURL: "https://dev.roamdigi.com" });
 }
 
-export default retrieveHtmlTemplate; 
+export default retrieveHtmlTemplate;

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+        <%= SUBJECT %>
+    </title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="<%= BASEURL %>/static/stylesheets/emails.css">
+</head>
+
+<body>
+    <div class="header">
+        <img src="<%= BASEURL %>/static/assets/logo.png" alt="Roam Digi Logo" class="logo" />
+        <hr class="blue-line" />
+    </div>
+
+    <div class="content">
+        <%- CONTENT %>
+    </div>
+    <div class="design-image">
+        <img src="<%= BASEURL %>/static/assets/wave.png" alt="Design Image" class="design-img-bottom" />
+    </div>
+    <footer>
+        <p>
+            We are a leading eSIM provider offering seamless, digital connectivity solutions<br />
+            for your mobile devices. Our eSIM technology eliminates the need for physical<br />
+            SIM cards, allowing you to activate mobile plans instantly and switch between carriers with ease.
+        </p>
+
+        <div class="contact-icons">
+            <p>
+                <i class="fas fa-phone"></i>
+                <a href="tel:+15852826724">+1 585 282 6724</a>
+            </p>
+
+            <p>
+                <i class="fas fa-envelope"></i>
+                <a href="mailto:info@roamdigi.com">info@roamdigi.com</a>
+            </p>
+
+            <p>
+                <i class="fas fa-globe"></i>
+                <a href="https://roamdigi.com" target="_blank">www.roamdigi.com</a>
+            </p>
+        </div>
+    </footer>
+
+</body>
+
+</html>

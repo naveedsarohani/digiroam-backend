@@ -2,11 +2,11 @@
   "name": "roamdigi",
   "version": "1.0.0",
   "description": "This is e-sim selling project",
-  "main": "public/index.js",
+  "main": "server.js",
   "type": "module",
   "scripts": {
-    "start": "node public/index.js",
-    "dev": "nodemon public/index.js"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
   "author": "Naveed Sarohani - naveed.sarohani@gmail.com",
   "license": "ISC",

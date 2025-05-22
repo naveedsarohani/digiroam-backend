@@ -2,6 +2,7 @@ import emailTemplateService from "../../app/services/email.template.service.js";
 import { application } from "../../config/env.js";
 import axiosInstance from "./axios.instance.js";
 import email from "./email.js";
+import retrieveHtmlTemplate from "./retrieve.html.template.js";
 
 // security email alerts
 const newLogin = async (user) => {
@@ -43,7 +44,7 @@ const passwordChange = async (user) => {
 
             emailOptions = {
                 subject: template.subject,
-                html: htmlContent,
+                html: await retrieveHtmlTemplate('email', { SUBJECT: template.subject, CONTENT: htmlContent }),
             };
         } else {
             emailOptions = {
@@ -65,7 +66,7 @@ const orderPurchase = async (orderNo, user) => {
         const profiles = await retrieveProfiles({ orderNo });
         const template = await emailTemplateService.retrieveOne({ eventName: "ON_PURCHASE" });
 
-        const emailPromises = profiles.map((profile) => {
+        const emailPromises = profiles.map(async (profile) => {
             let emailOptions;
             if (template) {
                 const htmlContent = template.body
@@ -77,7 +78,7 @@ const orderPurchase = async (orderNo, user) => {
 
                 emailOptions = {
                     subject: template.subject.replace("{{ORDER_ID}}", orderNo),
-                    html: htmlContent,
+                    html: await retrieveHtmlTemplate('email', { SUBJECT: template.subject.replace("{{ORDER_ID}}", orderNo), CONTENT: htmlContent }),
                 };
             } else {
                 emailOptions = {
@@ -118,7 +119,7 @@ const orderCencel = async (iccid, user) => {
 
             emailOptions = {
                 subject: template.subject.replace("{{ICCID}}", iccid),
-                html: htmlContent,
+                html: await retrieveHtmlTemplate('email', { SUBJECT: template.subject.replace("{{ICCID}}", iccid), CONTENT: htmlContent }),
             };
         } else {
             emailOptions = {
@@ -151,7 +152,7 @@ const orderUsage = async (user) => {
 
             emailOptions = {
                 subject: template.subject,
-                html: htmlContent,
+                html: await retrieveHtmlTemplate('email', { SUBJECT: template.subject, CONTENT: htmlContent }),
             };
         } else {
             emailOptions = {
@@ -181,7 +182,7 @@ const orderValidity = async (content, user) => {
 
             emailOptions = {
                 subject: template.subject,
-                html: htmlContent,
+                html: await retrieveHtmlTemplate('email', { SUBJECT: template.subject, CONTENT: htmlContent }),
             };
         } else {
             emailOptions = {
@@ -209,7 +210,7 @@ const orderExpired = async (user) => {
 
             emailOptions = {
                 subject: template.subject,
-                html: htmlContent,
+                html: await retrieveHtmlTemplate('email', { SUBJECT: template.subject, CONTENT: htmlContent }),
             };
         } else {
             emailOptions = {

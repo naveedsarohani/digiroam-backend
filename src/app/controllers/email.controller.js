@@ -3,6 +3,7 @@ import User from "../models/user.model.js";
 import email from "../../utils/helpers/email.js";
 import path from "path";
 import { retrieveProfiles } from "../../utils/helpers/email.on.event.js";
+import retrieveHtmlTemplate from "../../utils/helpers/retrieve.html.template.js";
 
 const send = async (req, res) => {
     try {
@@ -24,7 +25,7 @@ const send = async (req, res) => {
         if (orderNo || iccid) {
             const profiles = (await retrieveProfiles({ orderNo, iccid }) ?? []);
 
-            const emailPromises = profiles.map((profile, index) => {
+            const emailPromises = profiles.map(async (profile, index) => {
                 // replace placeholders in the body
                 template.body = template.body
                     .replaceAll("{{PLAN_NAME}}", profile.packageList[0].packageName ?? "N/A")
@@ -40,7 +41,7 @@ const send = async (req, res) => {
                 // email options
                 const emailOptions = {
                     subject: template.subject,
-                    html: template.body,
+                    html: await retrieveHtmlTemplate('email', { SUBJECT: template.subject, CONTENT: template.body }),
                     attachments: emailAttachments
                 };
                 // trigger email;
@@ -53,7 +54,7 @@ const send = async (req, res) => {
 
         const emailOptions = {
             subject: template.subject,
-            html: template.body,
+            html: await retrieveHtmlTemplate('email', { SUBJECT: template.subject, CONTENT: template.body }),
             attachments: emailAttachments
         };
 
