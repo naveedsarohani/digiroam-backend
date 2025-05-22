@@ -45,7 +45,7 @@ const useFunds = async (req, res) => {
         if (parseFloat(balance) < parseFloat(amount / 10000)) {
             return res.response(400, "You don't have enough fund to make this purchase");
         }
-        
+
         const updatedBalance = (parseFloat(balance) - parseFloat(amount / 10000));
 
         const user = await userService.update(userId, { balance: updatedBalance });
@@ -80,7 +80,7 @@ const cancelAndRefund = async (req, res) => {
         const user = await userService.update(userId, { balance: updatedBalance });
         if (!user) throw new Error("Failed to make re-fund");
 
-        const source = transactionId.includes("pi_") ? "CARD" : "PAYPAL";
+        const source = transactionId.includes("pi_") ? "CARD" : transactionId.includes("wallet_") ? "WALLET" : "PAYPAL";
         const transaction = await transactionService.create({
             userId, transactionId, amount: payment.amount / 10000, currency: payment.currency, source, type: "REFUND"
         });
