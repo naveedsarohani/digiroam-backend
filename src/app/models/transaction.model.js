@@ -27,8 +27,8 @@ const TransactionSchema = new mongoose.Schema({
     source: {
         type: String,
         required: true,
-        enum: ["STRIPE", "PAYPAL", "WALLET", "REFUND", "WITHDRAWAL"],
-        default: "STRIPE",
+        enum: ["CARD", "PAYPAL", "WALLET", "REFUND", "WITHDRAWAL"],
+        default: "CARD",
     },
     madeAt: {
         type: Date,

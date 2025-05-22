@@ -25,7 +25,7 @@ const deposit = async (req, res) => {
         const user = await userService.update(userId, { balance: updatedBalance });
         if (!user) throw new Error("Failed to update wallet with newly deposited funds");
 
-        const source = transactionId.includes("pi_") ? "STRIPE" : "PAYPAL";
+        const source = transactionId.includes("pi_") ? "CARD" : "PAYPAL";
         const transaction = await transactionService.create({
             userId, transactionId, amount, currency, source
         });
@@ -76,7 +76,7 @@ const cancelAndRefund = async (req, res) => {
         const user = await userService.update(userId, { balance: updatedBalance });
         if (!user) throw new Error("Failed to make re-fund");
 
-        const source = transactionId.includes("pi_") ? "STRIPE" : "PAYPAL";
+        const source = transactionId.includes("pi_") ? "CARD" : "PAYPAL";
         const transaction = await transactionService.create({
             userId, transactionId, amount: payment.amount / 10000, currency: payment.currency, source, type: "REFUND"
         });
