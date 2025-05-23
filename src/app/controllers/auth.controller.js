@@ -159,12 +159,13 @@ const socialCallback = async (req, res) => {
         res.redirect(`${server.origin}/login?error=${encodeURIComponent(error.message)}`);
     }
 };
+
 // Express route
 const nativeSociaSigninOrSignup = async (req, res) => {
     try {
         const { provider, email, name, providerId } = req.body;
 
-        if (!email || !provider || !providerId) {
+        if (!email || !provider || !providerId || !name) {
             return res.response(400, "Missing required fields");
         }
 

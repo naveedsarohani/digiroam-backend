@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>
+    <%= SUBJECT %>
+  </title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #f2f4f8;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .container {
+      max-width: 620px;
+      margin: 20px auto;
+      background: #ffffff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+      display: flex;
+      flex-direction: column;
+
+    }
+
+    header.header {
+      background-color: #f67a55;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    header.header img {
+      max-height: 45px;
+      flex-shrink: 0;
+    }
+
+    header.header h1 {
+      color: #ffffff;
+      font-size: 20px;
+      margin: 0;
+      flex-grow: 1;
+      text-align: right;
+      min-width: 200px;
+    }
+
+    main.content {
+      padding: 30px;
+      color: #333333;
+      flex-grow: 1;
+    }
+
+    main.content h2 {
+      color: #0047bb;
+      margin-bottom: 10px;
+      font-size: 22px;
+    }
+
+    main.content p {
+      line-height: 1.6;
+      font-size: 15px;
+    }
+
+    main.content a {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 12px 25px;
+      background-color: #0047bb;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 4px;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+    }
+
+    main.content a:hover {
+      background-color: #003399;
+    }
+
+    footer.footer {
+      background-color: #f1f3f5;
+      text-align: center;
+
+      font-size: 13px;
+      color: #666;
+    }
+
+    footer.footer a {
+      color: #0047bb;
+      text-decoration: none;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        margin: 10px;
+      }
+
+      header.header {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      header.header h1 {
+        margin-top: 10px;
+        text-align: center;
+        font-size: 18px;
+      }
+
+      main.content {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <header class="header">
+      <img src="C:\Users\PMLS\emailtemplates\image\emailtemplate\logo.png" alt="RoamDigi Logo" />
+      <h1>Stay Connected</h1>
+    </header>
+
+
+    <main class="content">
+      <%- CONTENT %>
+    </main>
+
+    <footer class="footer">
+      <p>
+        You can also purchase a brand new eSIM anytime and stay connected without interruption.
+      </p>
+
+      <p>Need assistance? Contact us:</p>
+      <p>
+        <i class="fas fa-phone"></i> +1 585 282 6724 |
+        <i class="fas fa-envelope"></i> <a href="mailto:info@roamdigi.com">info@roamdigi.com</a> |
+        <i class="fas fa-globe"></i> <a href="https://roamdigi.com">www.roamdigi.com</a>
+      </p>
+    </footer>
+  </div>
+</body>
+
+</html>
