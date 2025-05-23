@@ -23,14 +23,14 @@ const deposit = async (req, res) => {
         const { id: userId, balance } = req.user;
 
         const { net } = calculateNetAmount(amount);
-        const updatedBalance = parseFloat(balance) + net;
+        const updatedBalance = parseFloat(balance) + parseFloat(net);
 
         const user = await userService.update(userId, { balance: updatedBalance });
         if (!user) throw new Error("Failed to update wallet with newly deposited funds");
 
         const source = transactionId.includes("pi_") ? "CARD" : "PAYPAL";
         const transaction = await transactionService.create({
-            userId, transactionId, amount: net, currency, source
+            userId, transactionId, amount: parseFloat(net), currency, source
         });
         if (!transaction) throw new Error("Failed to push transaction history");
 
@@ -80,14 +80,14 @@ const cancelAndRefund = async (req, res) => {
         const { id: userId, balance } = req.user;
         if (Boolean(refund) == true) {
             const { net } = calculateNetAmount(payment.amount / 10000);
-            const updatedBalance = (parseFloat(balance) + net);
+            const updatedBalance = (parseFloat(balance) + parseFloat(net));
 
             const user = await userService.update(userId, { balance: updatedBalance });
             if (!user) throw new Error("Failed to make re-fund");
 
             const source = transactionId.includes("pi_") ? "CARD" : transactionId.includes("wallet_") ? "WALLET" : "PAYPAL";
             const transaction = await transactionService.create({
-                userId, transactionId, amount: net, currency: payment.currency, source, type: "REFUND"
+                userId, transactionId, amount: parseFloat(net), currency: payment.currency, source, type: "REFUND"
             });
             if (!transaction) throw new Error("Failed to push transaction history");
 
