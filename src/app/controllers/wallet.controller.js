@@ -6,6 +6,7 @@ import { paypalAxios } from "./payment.gateway.controller.js";
 import userService from "../services/user.service.js";
 import paymentService from "../services/payment.service.js";
 import axiosInstance from "../../utils/helpers/axios.instance.js";
+import calculateNetAmount from "../../utils/helpers/calculate.net.amount.js";
 
 const balance = async (req, res) => {
     try {
@@ -20,14 +21,16 @@ const deposit = async (req, res) => {
     try {
         const { transactionId, amount, currency } = req.body;
         const { id: userId, balance } = req.user;
-        const updatedBalance = (parseFloat(balance) + parseFloat(amount));
+
+        const { net } = calculateNetAmount(amount);
+        const updatedBalance = parseFloat(balance) + net;
 
         const user = await userService.update(userId, { balance: updatedBalance });
         if (!user) throw new Error("Failed to update wallet with newly deposited funds");
 
         const source = transactionId.includes("pi_") ? "CARD" : "PAYPAL";
         const transaction = await transactionService.create({
-            userId, transactionId, amount, currency, source
+            userId, transactionId, amount: net, currency, source
         });
         if (!transaction) throw new Error("Failed to push transaction history");
 
@@ -64,7 +67,7 @@ const useFunds = async (req, res) => {
 
 const cancelAndRefund = async (req, res) => {
     try {
-        const { esimTranNo, transactionId } = req.body;
+        const { esimTranNo, transactionId, refund = true } = req.body;
 
         const payment = await paymentService.retrieveOne({ transactionId });
         if (!payment) return res.response(404, "Payment not found with provided transaction ID");
@@ -75,18 +78,23 @@ const cancelAndRefund = async (req, res) => {
         };
 
         const { id: userId, balance } = req.user;
-        const updatedBalance = (parseFloat(balance) + parseFloat(payment.amount / 10000));
+        if (Boolean(refund) == true) {
+            const { net } = calculateNetAmount(payment.amount / 10000);
+            const updatedBalance = (parseFloat(balance) + net);
 
-        const user = await userService.update(userId, { balance: updatedBalance });
-        if (!user) throw new Error("Failed to make re-fund");
+            const user = await userService.update(userId, { balance: updatedBalance });
+            if (!user) throw new Error("Failed to make re-fund");
 
-        const source = transactionId.includes("pi_") ? "CARD" : transactionId.includes("wallet_") ? "WALLET" : "PAYPAL";
-        const transaction = await transactionService.create({
-            userId, transactionId, amount: payment.amount / 10000, currency: payment.currency, source, type: "REFUND"
-        });
-        if (!transaction) throw new Error("Failed to push transaction history");
+            const source = transactionId.includes("pi_") ? "CARD" : transactionId.includes("wallet_") ? "WALLET" : "PAYPAL";
+            const transaction = await transactionService.create({
+                userId, transactionId, amount: net, currency: payment.currency, source, type: "REFUND"
+            });
+            if (!transaction) throw new Error("Failed to push transaction history");
 
-        return res.response(200, "The amount has been refunded", { balance: updatedBalance });
+            return res.response(200, "Esim cancelled and the amount has been refunded", { balance: updatedBalance });
+        }
+
+        return res.response(200, "ESim has been cancelled", { balance });
     } catch (error) {
         return res.response(500, "Internal server error", { error: error.message });
     }
