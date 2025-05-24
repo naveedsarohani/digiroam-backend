@@ -1,13 +1,27 @@
 import emailTemplateService from "../../app/services/email.template.service.js";
+import settingService from "../../app/services/setting.service.js";
 import { application } from "../../config/env.js";
 import axiosInstance from "./axios.instance.js";
 import email from "./email.js";
 import retrieveHtmlTemplate from "./retrieve.html.template.js";
 
+export const retrieveEmailAndPhone = async () => {
+    const { contactList } = await settingService.retrieve();
+
+    const phoneObj = contactList.find(item => item.field == "Phone" || item.field == "phone");
+    const emailObj = contactList.find(item => item.field == "Email" || item.field == "email");
+
+    const phone = phoneObj ? phoneObj.label.trim() : null;
+    const email = emailObj ? emailObj.label.trim() : null;
+
+    return { emailAddress: email, phoneNumber: phone }
+}
+
 // security email alerts
 const newLogin = async (user) => {
     try {
         const template = await emailTemplateService.retrieveOne({ eventName: "ON_LOGIN" });
+        const { emailAddress, phoneNumber } = await retrieveEmailAndPhone();
 
         let emailOptions;
         if (template) {
@@ -16,7 +30,13 @@ const newLogin = async (user) => {
 
             emailOptions = {
                 subject: template.subject,
-                html: await retrieveHtmlTemplate('on.login', { SUBJECT: template.subject, CONTENT: htmlContent }),
+                html: await retrieveHtmlTemplate('on.login', {
+                    title: template.subject,
+                    content: htmlContent,
+                    description: "Dear Customer,Thank you for logging in to RoamDigi! Your eSIM service is now active — stay connected anytime, anywhere. We're here if you need any help.",
+                    email: emailAddress,
+                    phone: phoneNumber
+                }),
             };
         } else {
             emailOptions = {
@@ -36,6 +56,7 @@ const newLogin = async (user) => {
 const passwordChange = async (user) => {
     try {
         const template = await emailTemplateService.retrieveOne({ eventName: "ON_PASSWORD_CHANGE" });
+        const { emailAddress, phoneNumber } = await retrieveEmailAndPhone();
 
         let emailOptions;
         if (template) {
@@ -44,7 +65,13 @@ const passwordChange = async (user) => {
 
             emailOptions = {
                 subject: template.subject,
-                html: await retrieveHtmlTemplate('on.password.change', { SUBJECT: template.subject, CONTENT: htmlContent }),
+                html: await retrieveHtmlTemplate('on.password.change', {
+                    title: template.subject,
+                    content: htmlContent,
+                    description: "For your protection, we recommend using a strong and unique password for your RoamDigi account.",
+                    email: emailAddress,
+                    phone: phoneNumber
+                }),
             };
         } else {
             emailOptions = {
@@ -65,6 +92,7 @@ const orderPurchase = async (orderNo, user) => {
     try {
         const profiles = await retrieveProfiles({ orderNo });
         const template = await emailTemplateService.retrieveOne({ eventName: "ON_PURCHASE" });
+        const { emailAddress, phoneNumber } = await retrieveEmailAndPhone();
 
         const emailPromises = profiles.map(async (profile) => {
             let emailOptions;
@@ -78,7 +106,13 @@ const orderPurchase = async (orderNo, user) => {
 
                 emailOptions = {
                     subject: template.subject.replace("{{ORDER_ID}}", orderNo),
-                    html: await retrieveHtmlTemplate('on.purchase', { SUBJECT: template.subject.replace("{{ORDER_ID}}", orderNo), CONTENT: htmlContent }),
+                    html: await retrieveHtmlTemplate('on.purchase', {
+                        title: template.subject.replace("{{ORDER_ID}}", orderNo),
+                        content: htmlContent,
+                        description: "Thank you for purchasing your eSIM from RoamDigi! You're now ready to enjoy seamless connectivity worldwide. If you need any help setting up, our support team is here for you.",
+                        email: emailAddress,
+                        phone: phoneNumber
+                    }),
                 };
             } else {
                 emailOptions = {
@@ -106,6 +140,7 @@ const orderCencel = async (iccid, user) => {
     try {
         const profile = (await retrieveProfiles({ iccid })).at(0);
         const template = await emailTemplateService.retrieveOne({ eventName: "ON_CANCEL" });
+        const { emailAddress, phoneNumber } = await retrieveEmailAndPhone();
 
         let emailOptions;
         if (template) {
@@ -119,7 +154,13 @@ const orderCencel = async (iccid, user) => {
 
             emailOptions = {
                 subject: template.subject.replace("{{ICCID}}", iccid),
-                html: await retrieveHtmlTemplate('on.cancel', { SUBJECT: template.subject.replace("{{ICCID}}", iccid), CONTENT: htmlContent }),
+                html: await retrieveHtmlTemplate('on.cancel', {
+                    title: template.subject.replace("{{ICCID}}", iccid),
+                    content: htmlContent,
+                    description: "Dear Customer, We’ve successfully processed your eSIM cancellation with RoamDigi. If there’s anything we can do to improve your experience or assist in the future, feel free to reach out.",
+                    email: emailAddress,
+                    phone: phoneNumber
+                }),
             };
         } else {
             emailOptions = {
@@ -144,6 +185,7 @@ const orderCencel = async (iccid, user) => {
 const orderUsage = async (user) => {
     try {
         const template = await emailTemplateService.retrieveOne({ eventName: "ON_USAGE_80" });
+        const { emailAddress, phoneNumber } = await retrieveEmailAndPhone();
 
         let emailOptions;
         if (template) {
@@ -152,7 +194,13 @@ const orderUsage = async (user) => {
 
             emailOptions = {
                 subject: template.subject,
-                html: await retrieveHtmlTemplate('on.usage', { SUBJECT: template.subject, CONTENT: htmlContent }),
+                html: await retrieveHtmlTemplate('on.usage', {
+                    title: template.subject,
+                    content: htmlContent,
+                    description: "Your eSIM service is used 80%. After expiry, you can easily purchase a new eSIM to continue enjoying seamless connectivity.",
+                    email: emailAddress,
+                    phone: phoneNumber
+                }),
             };
         } else {
             emailOptions = {
@@ -173,6 +221,7 @@ const orderValidity = async (content, user) => {
     try {
         const profile = (await retrieveProfiles({ iccid: content.iccid })).at(0);
         const template = await emailTemplateService.retrieveOne({ eventName: "ON_1D_VALIDITY" });
+        const { emailAddress, phoneNumber } = await retrieveEmailAndPhone();
 
         let emailOptions;
         if (template) {
@@ -182,7 +231,13 @@ const orderValidity = async (content, user) => {
 
             emailOptions = {
                 subject: template.subject,
-                html: await retrieveHtmlTemplate('on.oneday.validity', { SUBJECT: template.subject, CONTENT: htmlContent }),
+                html: await retrieveHtmlTemplate('on.oneday.validity', {
+                    title: template.subject,
+                    content: htmlContent,
+                    description: "You can also purchase a brand new eSIM anytime and stay connected without interruption.",
+                    email: emailAddress,
+                    phone: phoneNumber
+                }),
             };
         } else {
             emailOptions = {
@@ -202,6 +257,7 @@ const orderValidity = async (content, user) => {
 const orderExpired = async (user) => {
     try {
         const template = await emailTemplateService.retrieveOne({ eventName: "ON_EXPIRED" });
+        const { emailAddress, phoneNumber } = await retrieveEmailAndPhone();
 
         let emailOptions;
         if (template) {
@@ -210,7 +266,13 @@ const orderExpired = async (user) => {
 
             emailOptions = {
                 subject: template.subject,
-                html: await retrieveHtmlTemplate('on.expired', { SUBJECT: template.subject, CONTENT: htmlContent }),
+                html: await retrieveHtmlTemplate('on.expired', {
+                    title: template.subject,
+                    content: htmlContent,
+                    description: "Expired eSIMs cannot be reused. Please select a new plan to continue enjoying RoamDigi services.",
+                    email: emailAddress,
+                    phone: phoneNumber
+                }),
             };
         } else {
             emailOptions = {

@@ -2,12 +2,13 @@ import emailService from "../services/email.template.service.js";
 import User from "../models/user.model.js";
 import email from "../../utils/helpers/email.js";
 import path from "path";
-import { retrieveProfiles } from "../../utils/helpers/email.on.event.js";
+import { retrieveEmailAndPhone, retrieveProfiles } from "../../utils/helpers/email.on.event.js";
 import retrieveHtmlTemplate from "../../utils/helpers/retrieve.html.template.js";
 
 const send = async (req, res) => {
     try {
         const { eventName, userEmail, orderNo, iccid } = req.body;
+        const { emailAddress, phoneNumber } = await retrieveEmailAndPhone();
 
         const user = await User.findOne({ email: userEmail });
         const template = await emailService.retrieveOne({ eventName });
@@ -41,7 +42,13 @@ const send = async (req, res) => {
                 // email options
                 const emailOptions = {
                     subject: template.subject,
-                    html: await retrieveHtmlTemplate('email', { SUBJECT: template.subject, CONTENT: template.body }),
+                    html: await retrieveHtmlTemplate('on.discount', {
+                        title: template.subject,
+                        content: template.body,
+                        description: null,
+                        email: emailAddress,
+                        phone: phoneNumber
+                    }),
                     attachments: emailAttachments
                 };
                 // trigger email;
@@ -54,7 +61,13 @@ const send = async (req, res) => {
 
         const emailOptions = {
             subject: template.subject,
-            html: await retrieveHtmlTemplate('email', { SUBJECT: template.subject, CONTENT: template.body }),
+            html: await retrieveHtmlTemplate('on.discount', {
+                title: template.subject,
+                content: template.body,
+                description: null,
+                email: emailAddress,
+                phone: phoneNumber
+            }),
             attachments: emailAttachments
         };
 

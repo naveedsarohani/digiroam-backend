@@ -160,7 +160,6 @@ const socialCallback = async (req, res) => {
     }
 };
 
-// Express route
 const nativeSociaSigninOrSignup = async (req, res) => {
     try {
         const { provider, email, name, providerId } = req.body;
