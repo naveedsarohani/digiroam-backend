@@ -16,7 +16,7 @@ const orderProfileSchema = Joi.object({
       Joi.object({
         packageCode: Joi.string().alphanum().required(),
         count: Joi.number().integer().required(),
-        price: Joi.number().integer().required(),
+        price: Joi.number().required(),
       })
     )
     .required(),

@@ -2,7 +2,7 @@ import { Router } from "express";
 import {
   getDataPackages,
   getBalance,
-  orderProfiles,
+  // orderProfiles,
   allocatedProfiles,
   cancelProfile,
   suspendProfile,
@@ -11,7 +11,7 @@ import {
   topUp,
   sendSms
 } from "../controllers/eSimExternal.controller.js";
-
+import externalEsimPlanController from "../app/controllers/external.esim.plan.controller.js";
 import schema from "../app/middlewares/schema.js";
 
 import {
@@ -30,7 +30,7 @@ const eSimRoute = Router();
 
 eSimRoute.route("/getPackages").post(schema.validator(dataPackagesSchema), getDataPackages);
 eSimRoute.route("/getBalance").post(getBalance);
-eSimRoute.route("/orderProfiles").post(schema.validator(orderProfileSchema), orderProfiles);
+eSimRoute.route("/orderProfiles").post(schema.validator(orderProfileSchema), externalEsimPlanController.orderEsims);
 eSimRoute.route("/allocatedProfiles").post(schema.validator(allocatedProfileSchema), allocatedProfiles);
 eSimRoute.route("/cancelProfile").post(schema.validator(cancelProfileSchema), cancelProfile);
 eSimRoute.route("/suspendProfile").post(schema.validator(suspendProfileSchema), suspendProfile);

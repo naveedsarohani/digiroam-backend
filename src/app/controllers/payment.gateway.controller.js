@@ -73,25 +73,24 @@ const capturePaypalForNative = async (req, res) => {
             const transactionId = payment?.cart;
             const currency = payment?.transactions[0]?.amount?.currency
 
-            const { markup, amount, packageInfoList, isEmpty } = await retrieveCart(userId, type);
-            if (isEmpty) throw new Error("The cart/buynow is empty");
+            const { markup, amount, packageInfoList, isEmpty, errorMessage = "" } = await retrieveCart(userId, type);
+            if (isEmpty) throw new Error(errorMessage ?? "The cart/buynow is empty");
 
             const { data } = await axiosInstance.post("/esim/order", {
-                transactionId, amount: String(amount), packageInfoList
+                transactionId, amount, packageInfoList
             });
-            if (data?.success === false) throw new Error("failed to purchase eSim");
 
-            const { failed } = await savePurchaseAndRemoveCart(userId, markup, {
+            if (data?.success === false) throw new Error(data?.errorMsg);
+
+            const { failed, errorText = "" } = await savePurchaseAndRemoveCart(userId, markup, {
                 transactionId, currency, amount, packageInfoList, orderNo: data.obj.orderNo
             }, type);
-            if (failed) throw new Error("Failed to save payment or clearing cart");
+            if (failed) throw new Error(errorText ?? "Failed to save payment or clearing cart");
 
             return res.redirect('https://success.com/payment-success');
         });
     } catch (error) {
-        console.log(error);
-        console.log("error-message", error.message);
-        return res.redirect('https://success.com/payment-failure')
+        return res.redirect(`https://success.com/payment-failure?error=${error.message}`)
     }
 };
 
@@ -200,6 +199,9 @@ const retrieveCart = async (userId, type = "cart") => {
     try {
         const { pricePercentage } = await settingService.retrieve();
 
+        const packages = await axiosInstance.post("/package/list", {});
+        if (packages?.data?.success === false) throw new Error(packages.data?.errorMsg);
+
         let packageInfoList = [];
         let amount = 0;
 
@@ -209,13 +211,13 @@ const retrieveCart = async (userId, type = "cart") => {
             if (!cart || cart.items.length === 0 || !pricePercentage) {
                 throw new Error("Cart is empty or price percentage not retrieved");
             }
-            packageInfoList = cart.items.map((item) => ({
-                packageCode: item.productId,
-                count: item.productQuantity,
-                price: item.productPrice * 10000,
-            }));
 
-            amount = cart.totalPrice * 10000;
+            packageInfoList = cart.items.map((order) => {
+                const pkg = packages.data.obj.packageList.find((pkg) => pkg.packageCode == order.productId);
+                return { ...order, price: pkg.price };
+            });
+            amount = packageInfoList.reduce((total, { price, count }) => total + (price * count), 0);
+
         } else {
             const buynow = await Buynow.findOne({ userId });
 
@@ -224,9 +226,10 @@ const retrieveCart = async (userId, type = "cart") => {
             }
 
             const { packageCode, price, count } = buynow;
-            packageInfoList = [{ packageCode, price: price * 10000, count }];
+            const pkg = packages.data.obj.packageList.find((pkg) => pkg.packageCode == packageCode);
 
-            amount = packageInfoList[0].price;
+            packageInfoList = [{ packageCode, price: pkg.price, count }];
+            amount = pkg.price;
         }
 
         return {
@@ -235,7 +238,7 @@ const retrieveCart = async (userId, type = "cart") => {
             isEmpty: false
         };
     } catch (error) {
-        throw error;
+        return { isEmpty: true, errorMessage: error.message };
     }
 }
 
@@ -261,7 +264,7 @@ const savePurchaseAndRemoveCart = async (userId, markup, data, type = "cart") =>
         }
 
         if (!(await paymentService.create({ userId, ...data }))) {
-            throw new Error("Payment exists");
+            throw new Error("Failed to save payment record");
         }
 
         if (type == "cart") {
@@ -272,7 +275,7 @@ const savePurchaseAndRemoveCart = async (userId, markup, data, type = "cart") =>
 
         return { failed: false }
     } catch (error) {
-        throw error;
+        return { failed: true, errorText: error.message }
     }
 }
 
