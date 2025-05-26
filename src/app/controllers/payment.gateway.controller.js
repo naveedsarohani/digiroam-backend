@@ -214,9 +214,9 @@ const retrieveCart = async (userId, type = "cart") => {
 
             packageInfoList = cart.items.map((order) => {
                 const pkg = packages.data.obj.packageList.find((pkg) => pkg.packageCode == order.productId);
-                return { ...order, price: pkg.price };
+                return { ...order, price: pkg.price, count: pkg?.count ?? 1 };
             });
-            amount = packageInfoList.reduce((total, { price, count }) => total + (price * count), 0);
+            amount = packageInfoList.reduce((total, { price, count = 1 }) => total + (price * count), 0);
 
         } else {
             const buynow = await Buynow.findOne({ userId });
