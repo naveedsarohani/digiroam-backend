@@ -212,6 +212,7 @@ const retrieveCart = async (userId, type = "cart") => {
                 throw new Error("Cart is empty or price percentage not retrieved");
             }
 
+            console.log("Cart items:", cart.items);
             packageInfoList = cart.items.map((order) => {
                 const pkg = packages.data.obj.packageList.find((pkg) => pkg.packageCode == order.productId);
                 return { ...order, price: pkg.price, count: pkg?.count ?? 1 };
