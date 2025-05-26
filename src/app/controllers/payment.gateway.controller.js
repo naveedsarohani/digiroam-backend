@@ -212,12 +212,18 @@ const retrieveCart = async (userId, type = "cart") => {
                 throw new Error("Cart is empty or price percentage not retrieved");
             }
 
+            console.log("Cart items:", cart.items, '01');
             packageInfoList = cart.items.map((order) => {
                 const pkg = packages.data.obj.packageList.find((pkg) => pkg.packageCode == order.productName);
-                return { packageCode: order.productName, price: pkg.price, count: order.productQuantity };
+                console.log("Package found:", pkg);
+                return { packageCode: order.productId, price: pkg.price, count: order.productQuantity };
             });
+
+            console.log("Cart items:", cart.items, '02');
             amount = packageInfoList.reduce((total, { price, count = 1 }) => total + (price * count), 0);
 
+
+            console.log("Cart items:", cart.items, '03');
         } else {
             const buynow = await Buynow.findOne({ userId });
 
