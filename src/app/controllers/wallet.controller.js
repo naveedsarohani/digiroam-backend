@@ -232,7 +232,7 @@ const generatePaypalOrderDepositFromNative = async (req, res) => {
 
 const capturePaypalOrderDepositFromNative = async (req, res) => {
     try {
-        const { paymentId, userId } = req.query;
+        const { paymentId, PayerID, userId } = req.query;
 
         const execute_payment_json = {
             payer_id: PayerID,
@@ -264,6 +264,7 @@ const capturePaypalOrderDepositFromNative = async (req, res) => {
             return res.redirect('https://success.com/payment-success');
         });
     } catch (error) {
+        console.log(error.message);
         return res.redirect(`https://success.com/payment-failure?error=${error.message}`)
     }
 };
