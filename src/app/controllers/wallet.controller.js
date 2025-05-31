@@ -215,7 +215,6 @@ const generatePaypalOrderDepositFromNative = async (req, res) => {
 
         paypal.payment.create(create_payment_json, function (error, payment) {
             if (error) {
-                console.log("errored", error);
                 return res.response(500, "Error in payment creation");
             } else {
                 if (payment.state === "created") {
@@ -227,7 +226,6 @@ const generatePaypalOrderDepositFromNative = async (req, res) => {
             }
         });
     } catch (error) {
-        console.log("erogin", error);
         return res.response(500, "Internal server error", { error: error.message });
     }
 };
@@ -241,18 +239,13 @@ const capturePaypalOrderDepositFromNative = async (req, res) => {
         };
 
         paypal.payment.execute(paymentId, execute_payment_json, async function (error, payment) {
-            console.log("error", error);
             if (error || !payment || payment.state !== "approved") {
                 throw new Error(error);
             }
-            console.log('payment', payment);
             const transactionData = payment.transactions[0];
             const amount = parseFloat(transactionData.amount.total);
             const currency = transactionData?.amount?.currency ?? "USD";
             const transactionId = payment?.cart;
-
-            console.log('transaction data', transactionData);
-            console.log('amount data', amount, currency, transactionId);
 
             let user = await userService.retrieveOne({ _id: userId });
             if (!user) throw new Error('User not found');
@@ -263,14 +256,13 @@ const capturePaypalOrderDepositFromNative = async (req, res) => {
             if (!user) throw new Error("Failed to update wallet with newly deposited funds");
 
             const transaction = await transactionService.create({
-                transactionId, amount, currency, source: "PAYPAL"
+                userId, transactionId, amount, currency, source: "PAYPAL"
             });
             if (!transaction) throw new Error("Failed to push transaction history");
 
             return res.redirect('https://success.com/payment-success');
         });
     } catch (error) {
-        console.log(error.message);
         return res.redirect(`https://success.com/payment-failure?error=${error.message}`)
     }
 };
