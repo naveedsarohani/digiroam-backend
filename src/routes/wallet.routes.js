@@ -51,11 +51,11 @@ walletRoutes.post("/paypal-native/generate-order/add-funds",
     walletController.generatePaypalOrderDepositFromNative
 );
 
-walletRoutes.post("/paypal-native/capture-order/add-funds",
+walletRoutes.get("/paypal-native/capture-order/add-funds",
     auth.authenticate,
     walletController.capturePaypalOrderDepositFromNative
 );
-walletRoutes.post("/paypal-native/capture-order/failed",
+walletRoutes.get("/paypal-native/capture-order/failed",
     auth.authenticate,
     walletController.paypalCaptureOrderFailedFromNative
 );

@@ -249,7 +249,7 @@ const capturePaypalOrderDepositFromNative = async (req, res) => {
             const transactionId = payment?.cart;
 
             let user = await userService.retrieveOne({ _id: userId });
-            if (!user) return res.redirect('https://success.com/payment-failure');
+            if (!user) throw new Error('User not found');
 
             const updatedBalance = (user.balance + amount);
 
@@ -264,7 +264,7 @@ const capturePaypalOrderDepositFromNative = async (req, res) => {
             return res.redirect('https://success.com/payment-success');
         });
     } catch (error) {
-        return res.redirect('https://success.com/payment-failure')
+        return res.redirect(`https://success.com/payment-failure?error=${error.message}`)
     }
 };
 
