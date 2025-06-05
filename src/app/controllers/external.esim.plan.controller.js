@@ -1,5 +1,7 @@
 import axiosInstance from "../../utils/helpers/axios.instance.js";
+import getPriceWithMarkup from "../../utils/helpers/get.price.with.markup.js";
 import modifyPackagePrices from "../../utils/helpers/modify.package.prices.js";
+import settingService from "../services/setting.service.js";
 
 const index = async (req, res) => {
     try {
@@ -16,6 +18,8 @@ const index = async (req, res) => {
 
 const orderEsims = async (req, res) => {
     try {
+        const { pricePercentage } = await settingService.retrieve();
+
         const packages = await axiosInstance.post("/package/list", {});
         if (packages?.data?.success === false) throw new Error(packages.data?.errorMsg);
 
@@ -23,13 +27,15 @@ const orderEsims = async (req, res) => {
             const pkg = packages.data.obj.packageList.find((pkg) => pkg.packageCode == order.packageCode);
             return { ...order, price: pkg.price };
         });
-        const amount = packageInfoList.reduce((total, { price, count }) => total + (price * count), 0);
+        const amount = packageInfoList.reduce((total, { price, count }) => total + (getPriceWithMarkup((price / 10000), pricePercentage) * count), 0);
         const transactionId = req.body.transactionId;
 
         const esims = await axiosInstance.post("/esim/order", { transactionId, amount, packageInfoList });
         if (esims?.data?.success === false) throw new Error(esims.data?.errorMsg);
 
         const data = esims.data.obj;
+
+        const amountWithMarkup = packageInfoList.reduce((total, { price, count }) => total + (price * count), 0);
         return res.response(200, "Order has been placed", { data, amount });
     } catch (error) {
         return res.response(500, error.message);
