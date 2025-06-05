@@ -35,7 +35,7 @@ const orderEsims = async (req, res) => {
 
         const data = esims.data.obj;
 
-        const amountWithMarkup = packageInfoList.reduce((total, { price, count }) => total + (getPriceWithMarkup((price / 10000), pricePercentage) * count), 0);
+        const amountWithMarkup = packageInfoList.reduce((total, { price, count }) => total + ((getPriceWithMarkup((price / 10000), pricePercentage) / 10000) * count), 0);
         return res.response(200, "Order has been placed", { data, amount: amountWithMarkup });
     } catch (error) {
         return res.response(500, error.message);
