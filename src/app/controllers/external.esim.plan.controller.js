@@ -30,7 +30,7 @@ const orderEsims = async (req, res) => {
         if (esims?.data?.success === false) throw new Error(esims.data?.errorMsg);
 
         const data = esims.data.obj;
-        return res.response(200, "Order has been placed", { data });
+        return res.response(200, "Order has been placed", { data, amount });
     } catch (error) {
         return res.response(500, error.message);
     }
