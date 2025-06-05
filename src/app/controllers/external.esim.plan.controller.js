@@ -27,7 +27,7 @@ const orderEsims = async (req, res) => {
             const pkg = packages.data.obj.packageList.find((pkg) => pkg.packageCode == order.packageCode);
             return { ...order, price: pkg.price };
         });
-        const amount = packageInfoList.reduce((total, { price, count }) => total + (getPriceWithMarkup((price / 10000), pricePercentage) * count), 0);
+        const amount = packageInfoList.reduce((total, { price, count }) => total + (price * count), 0);
         const transactionId = req.body.transactionId;
 
         const esims = await axiosInstance.post("/esim/order", { transactionId, amount, packageInfoList });
@@ -35,8 +35,8 @@ const orderEsims = async (req, res) => {
 
         const data = esims.data.obj;
 
-        const amountWithMarkup = packageInfoList.reduce((total, { price, count }) => total + (price * count), 0);
-        return res.response(200, "Order has been placed", { data, amount });
+        const amountWithMarkup = packageInfoList.reduce((total, { price, count }) => total + (getPriceWithMarkup((price / 10000), pricePercentage) * count), 0);
+        return res.response(200, "Order has been placed", { data, amount: amountWithMarkup });
     } catch (error) {
         return res.response(500, error.message);
     }
