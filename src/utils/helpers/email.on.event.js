@@ -23,7 +23,7 @@ const temporaryPassword = async (userEmail, passwordString) => {
 
         const subject = "Here's Your Temporary Password – Please Update It After Logging In";
         const contentHtml = `
-            <h3>Dear Customer</h3>
+            <h3>Dear Customer,</h3>
             <p>Your password has been successfully reset.</p>
             <p>Here is your temporary password: <strong>${passwordString}</strong></p>
             <p>Please use this password to log in and change it to a new one as soon as possible to ensure your account's security.</p>
@@ -53,14 +53,14 @@ const sendOtp = async (userEmail, data) => {
         const { emailAddress, phoneNumber } = await retrieveEmailAndPhone();
 
         const fallbackEmailContent = `
-            <h3>Dear Customer</h3>,
+            <h3>Dear Customer,</h3>
             <p>Your OTP: <strong>{{OTP_CODE}}</strong></p>
             <p>This OTP is valid for 02 minutes only.</p>
             <p>Your security is our priority at RoamDigi. Use this OTP to complete your verification securely. If you didn’t request this, please ignore the message. For any help, we're just a message away.</p>
         `;
 
         const subject = (template?.subject || data.subject || '').replaceAll("{{OTP_PURPOSE}}", data?.purpose ?? '');
-        const contentHtml = (template?.body || fallbackEmailContent).replaceAll("{{OTP_CODE}}", data?.otpCode);
+        const contentHtml = (template?.body || fallbackEmailContent).replaceAll("{{OTP_CODE}}", data?.otp);
 
         const options = {
             subject,
