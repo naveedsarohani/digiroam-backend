@@ -1,13 +1,7 @@
-import { ApiError } from "../utils/ApiError.js";
-import User from "../app/models/user.model.js"
 import { ApiResponse } from "../utils/ApiResonse.js";
-import { generateAndSaveOtp } from "../utils/generateOtp.js";
 import { configDotenv } from "dotenv";
-import { transporter } from "../utils/sendMail.js";
-import { TWILIO_ID, TWILIO_TOKEN, TWILIO_WHATSAPP_NUMBER, SENDER_EMAIL } from "../config/env.js";
-import OtpVerification from "../app/models/otp.verification.model.js";
+import { TWILIO_ID, TWILIO_TOKEN, TWILIO_WHATSAPP_NUMBER } from "../config/env.js";
 import Twilio from "twilio";
-import emailOnEvent from "../utils/helpers/email.on.event.js";
 
 configDotenv();
 

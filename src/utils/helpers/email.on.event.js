@@ -1,6 +1,5 @@
 import emailTemplateService from "../../app/services/email.template.service.js";
 import settingService from "../../app/services/setting.service.js";
-import { application } from "../../config/env.js";
 import axiosInstance from "./axios.instance.js";
 import email from "./email.js";
 import retrieveHtmlTemplate from "./retrieve.html.template.js";
@@ -18,6 +17,68 @@ export const retrieveEmailAndPhone = async () => {
 }
 
 // security email alerts
+const temporaryPassword = async (userEmail, passwordString) => {
+    try {
+        const { emailAddress, phoneNumber } = await retrieveEmailAndPhone();
+
+        const subject = "Here's Your Temporary Password – Please Update It After Logging In";
+        const contentHtml = `
+            <h3>Dear Customer</h3>
+            <p>Your password has been successfully reset.</p>
+            <p>Here is your temporary password: <strong>${passwordString}</strong></p>
+            <p>Please use this password to log in and change it to a new one as soon as possible to ensure your account's security.</p>
+            <p>If you did not request this change, please contact our support team immediately.</p>
+        `;
+
+        const options = {
+            subject,
+            html: await retrieveHtmlTemplate('temp.password', {
+                title: subject,
+                content: contentHtml,
+                description: "Thanks for being part of RoamDigi. We’re here to help if you need anything — your peace of mind is our priority.",
+                email: emailAddress,
+                phone: phoneNumber
+            }),
+        };
+
+        await email.send(userEmail, options);
+    } catch (error) {
+        throw error;
+    }
+};
+
+const sendOtp = async (userEmail, data) => {
+    try {
+        const template = await emailTemplateService.retrieveOne({ eventName: "ON_SEND_OTP" });
+        const { emailAddress, phoneNumber } = await retrieveEmailAndPhone();
+
+        const fallbackEmailContent = `
+            <h3>Dear Customer</h3>,
+            <p>Your OTP: <strong>{{OTP_CODE}}</strong></p>
+            <p>This OTP is valid for 02 minutes only.</p>
+            <p>Your security is our priority at RoamDigi. Use this OTP to complete your verification securely. If you didn’t request this, please ignore the message. For any help, we're just a message away.</p>
+        `;
+
+        const subject = (template?.subject || data.subject || '').replaceAll("{{OTP_PURPOSE}}", data?.purpose ?? '');
+        const contentHtml = (template?.body || fallbackEmailContent).replaceAll("{{OTP_CODE}}", data?.otpCode);
+
+        const options = {
+            subject,
+            html: await retrieveHtmlTemplate('otp', {
+                title: subject,
+                content: contentHtml,
+                description: "You're in safe hands with RoamDigi. For any questions or help, feel free to reach out to our support team anytime.",
+                email: emailAddress,
+                phone: phoneNumber
+            }),
+        };
+
+        await email.send(userEmail, options);
+    } catch (error) {
+        throw error;
+    }
+};
+
 const newLogin = async (user) => {
     try {
         const template = await emailTemplateService.retrieveOne({ eventName: "ON_LOGIN" });
@@ -42,7 +103,7 @@ const newLogin = async (user) => {
             emailOptions = {
                 subject: "New Login Detected - Was This You?",
                 CUSTOMER_NAME: user.name,
-                SUPPORT_EMAIL: application.supportEmail,
+                SUPPORT_EMAIL: emailAddress,
                 template: "email_templates/login.attempt"
             };
         }
@@ -77,7 +138,7 @@ const passwordChange = async (user) => {
             emailOptions = {
                 subject: "Account Password Changed – Was This You?",
                 CUSTOMER_NAME: user.name,
-                SUPPORT_EMAIL: application.supportEmail,
+                SUPPORT_EMAIL: emailAddress,
                 template: "email_templates/password.change"
             };
         }
@@ -122,7 +183,7 @@ const orderPurchase = async (orderNo, user) => {
                     COUNTRY: profile.packageList[0].locationCode,
                     DAYS: profile.totalDuration,
                     DATA_LIMIT: ((profile.totalVolume / 1024) / 1024) / 1024,
-                    SUPPORT_EMAIL: application.supportEmail,
+                    SUPPORT_EMAIL: emailAddress,
                     template: "email_templates/order.confirm"
                 };
             }
@@ -171,7 +232,7 @@ const orderCencel = async (iccid, user) => {
                 COUNTRY: profile.packageList[0].locationCode,
                 DAYS: profile.totalDuration,
                 DATA_LIMIT: ((profile.totalVolume / 1024) / 1024) / 1024,
-                SUPPORT_EMAIL: application.supportEmail,
+                SUPPORT_EMAIL: emailAddress,
                 template: "email_templates/order.cancel"
             };
         }
@@ -206,7 +267,7 @@ const orderUsage = async (user) => {
             emailOptions = {
                 subject: "You’ve Used 80% of Your Data – Top Up Now!",
                 CUSTOMER_NAME: user.name,
-                SUPPORT_EMAIL: application.supportEmail,
+                SUPPORT_EMAIL: emailAddress,
                 template: "email_templates/order.usage"
             };
         }
@@ -278,7 +339,7 @@ const orderExpired = async (user) => {
             emailOptions = {
                 subject: "Your eSIM Has Expired – Stay Connected!",
                 CUSTOMER_NAME: user.name,
-                SUPPORT_EMAIL: application.supportEmail,
+                SUPPORT_EMAIL: emailAddress,
                 template: "email_templates/order.validity"
             };
         }
@@ -305,4 +366,14 @@ export const retrieveProfiles = async ({ orderNo = null, iccid = null }) => {
     }
 };
 
-export default { newLogin, passwordChange, orderPurchase, orderCencel, orderUsage, orderValidity, orderExpired }
+export default {
+    temporaryPassword,
+    sendOtp,
+    newLogin,
+    passwordChange,
+    orderPurchase,
+    orderCencel,
+    orderUsage,
+    orderValidity,
+    orderExpired
+}

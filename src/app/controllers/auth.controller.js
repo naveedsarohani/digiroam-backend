@@ -5,7 +5,6 @@ import { Strategy as AppleStrategy } from "passport-apple"
 import emailOnEvent from "../../utils/helpers/email.on.event.js";
 import randomString from "../../utils/helpers/random.string.js";
 import { generateAndSaveOtp } from "../../utils/generateOtp.js";
-import emailTransporter from "../../utils/helpers/email.js";
 import { auth, server } from "../../config/env.js";
 import User from "../models/user.model.js";
 import OtpVerification from "../models/otp.verification.model.js";
@@ -227,14 +226,12 @@ const validationLogin = async (req, res) => {
         }
 
         if (!isDevEmail && !user.verified) {
-            const otp = await generateAndSaveOtp(email);
-
-            const mailOptions = {
-                subject: "Your OTP Code",
-                text: `Your OTP code is ${otp}. It is valid for 2 minute.`,
-            };
-
-            await emailTransporter.send(email, mailOptions);
+            const options = {
+                subject: "Your OTP Code To {{OTP_PURPOSE}}",
+                purpose: "Validate Your Login Attempt!",
+                otp: await generateAndSaveOtp(email),
+            }
+            await emailOnEvent.sendOtp(email, options);
             return res.response(403, "User is not verified", { data: { email, verified: false } });
         }
 
@@ -255,15 +252,14 @@ const register = async (req, res, next) => {
         if (await User.findOne({ email })) {
             return res.response(400, "Email is already in use");
         }
-
-        const mailOptions = {
-            subject: "Your OTP Code",
-            text: `Your OTP code is ${await generateAndSaveOtp(email)}. It is valid for 2 minute.`,
-        };
-
         await User.create({ name, email, password });
-        await emailTransporter.send(email, mailOptions);
 
+        const options = {
+            subject: "Your OTP Code To {{OTP_PURPOSE}}",
+            purpose: "Verify Your Email Address!",
+            otp: await generateAndSaveOtp(email),
+        }
+        await emailOnEvent.sendOtp(email, options);
         return res.response(201, "User created successfully", { data: { email } });
     } catch (error) {
         return res.response(500, "Internal server error", { error: error.message });
@@ -298,13 +294,13 @@ const forgotPasswordRequest = async (req, res) => {
 
         if (!user) return res.response(400, "User not found");
 
-        const otp = await generateAndSaveOtp(email);
-        const mailOptions = {
-            subject: "Password reset request",
-            text: `Your OTP code is ${otp}. It is valid for 2 minute.`,
-        };
+        const options = {
+            subject: "Your OTP Code To {{OTP_PURPOSE}}",
+            purpose: "Gain Your Account Access Back!",
+            otp: await generateAndSaveOtp(email),
+        }
+        await emailOnEvent.sendOtp(email, options);
 
-        await emailTransporter.send(email, mailOptions);
         return res.response(200, "OTP sent successfully");
     } catch (error) {
         return res.response(500, "Internal server error", { error: error.message });
@@ -334,12 +330,7 @@ const forgotPasswordOtpVerification = async (req, res) => {
         user.password = hashedPassword.slice(10, 18);
         await user.save();
 
-        const mailOptions = {
-            subject: "Your password reset Successfully",
-            text: `Your new password is ${hashedPassword.slice(10, 18)}`,
-        };
-
-        await emailTransporter.send(email, mailOptions);
+        await emailOnEvent.temporaryPassword(email, hashedPassword.slice(10, 18));
         await emailOnEvent.passwordChange(user);
 
         return res.response(200, "Password reset successfully");
