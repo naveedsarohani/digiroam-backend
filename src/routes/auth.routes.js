@@ -37,4 +37,8 @@ authRoutes.post("/native/callback",
   authController.nativeSociaSigninOrSignup
 );
 
+authRoutes.get("/hasSocialLogins",
+  authController.hasSocialLogins
+)
+
 export default authRoutes;

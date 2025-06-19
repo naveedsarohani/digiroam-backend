@@ -348,6 +348,10 @@ const verifyToken = async (req, res) => {
     }
 };
 
+const hasSocialLogins = async (req, res) => {
+    return res.response(200, "Social logins are available", { hasSocialLogins: false });
+};
+
 export default {
     facebookLoginStrategy,
     googleLoginStrategy,
@@ -359,5 +363,6 @@ export default {
     verifyOtp,
     forgotPasswordRequest,
     forgotPasswordOtpVerification,
-    verifyToken
+    verifyToken,
+    hasSocialLogins
 };
