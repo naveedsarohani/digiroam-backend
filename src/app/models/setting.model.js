@@ -4,7 +4,13 @@ const SettingSchema = new mongoose.Schema(
     {
         pricePercentage: {
             type: Number,
-            required: true
+            required: true,
+            default: 1,
+        },
+        minTopupRange: {
+            type: Number,
+            required: true,
+            default: 5
         },
         serviceLinks: {
             type: [{
@@ -36,6 +42,7 @@ async function ensureDefaultSetting() {
     const count = await Setting.countDocuments();
     if (count === 0) await Setting.create({
         pricePercentage: 1,
+        minTopupRange: 5,
         serviceLinks: [],
         contactList: []
     });

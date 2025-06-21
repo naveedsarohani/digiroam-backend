@@ -11,19 +11,25 @@ const read = async (req, res) => {
 
 const update = async (req, res) => {
     try {
-        const { pricePercentage, service, contact } = req.body;
+        const { pricePercentage, minTopupRange, service, contact } = req.body;
         const currentSettings = await settingService.retrieve();
 
         let updatedData = {};
 
-        // default price percentage
+        // default price percentage and minimum topup range
         if (!currentSettings) {
             updatedData.pricePercentage = 1
+            updatedData.minTopupRange = 5
         }
 
         // update pricePercentage only if provided
         if (pricePercentage !== undefined) {
             updatedData.pricePercentage = pricePercentage;
+        }
+
+        // update minTopupRange only if provided
+        if (minTopupRange !== undefined) {
+            updatedData.minTopupRange = minTopupRange;
         }
 
         // update or add serviceLinks only if service is provided

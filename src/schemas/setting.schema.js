@@ -5,6 +5,10 @@ const update = Joi.object({
         "number.base": "Price percentage must be a number",
     }).optional(),
 
+    minTopupRange: Joi.number().messages({
+        "number.base": "Minimum Topup Range must be a number",
+    }).optional(),
+
     service: Joi.object({
         _id: Joi.string().optional().messages({
             "string.base": "Service id must be a string",
