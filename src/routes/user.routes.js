@@ -12,6 +12,11 @@ userRoutes.get("/",
     userController.index
 );
 
+userRoutes.post("/delete-account",
+    auth.authenticate,
+    userController.delete
+);
+
 // userRoutes.get("/:userId",
 //     auth, userController.show
 // );

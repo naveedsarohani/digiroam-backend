@@ -46,9 +46,7 @@ const update = async (id, data) => {
 
 const del = async (id) => {
     try {
-        validateMongooseObjectId(id);
-
-        const user = await User.findByIdAndDelete(id).select();
+        const user = await User.findByIdAndDelete(id);
         if (!user) throw new Error("User account not found");
 
         return user;

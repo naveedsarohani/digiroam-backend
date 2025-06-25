@@ -108,8 +108,20 @@ const updatePassword = async (req, res, next) => {
 
 const del = async (req, res) => {
     try {
-        const user = await userService.delete(req.params.userId)
-        return res.response(200, "User account deleted successfully.", { user });
+        const { password } = req.body;
+
+        const user = await User.findOne({ email: req.user.email });
+        if (!user) {
+            return res.response(400, "Account not found");
+        }
+
+        const isCorrectPassword = await user.isPasswordCorrect(password);
+        if (!isCorrectPassword) {
+            return res.response(400, "Pasword didn't match");
+        }
+
+        await userService.delete(user._id)
+        return res.response(200, "Your account has been deleted");
     } catch (error) {
         return res.response(400, "Failed to delete user account", { error: error.message });
     }
@@ -154,5 +166,21 @@ const assignRole = async (req, res, next) => {
         return res.response(400, "Failed to update user role", { error: error.message });
     }
 };
+
+// const del = async (req, res) => {
+//     try {
+//         const { password } = req.body;
+
+//         const user = await User.findOne({ _id: userId });
+
+//         if (!user) return res.response(404, "User not found");
+//         user.userRole = role;
+//         await user.save({ validateBeforeSave: false });
+
+//         return res.response(200, "User role updated successfully");
+//     } catch (error) {
+//         return res.response(400, "Failed to update user role", { error: error.message });
+//     }
+// };
 
 export default { index, show, myProfile, create, update, updatePassword, delete: del, esims, assignRole }

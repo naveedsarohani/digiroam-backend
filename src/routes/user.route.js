@@ -77,4 +77,9 @@ userRoute.route("/getDataPackagesList").post(externalEsimPlanController.index);
 userRoute.route("/logout").post(auth.authenticate, logout);
 userRoute.route("/sendWhatsAppOtp").post(sendWhatsAppOtp);
 
+userRoute.post("/delete-account",
+  auth.authenticate,
+  userController.delete
+);
+
 export { userRoute };
