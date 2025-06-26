@@ -14,6 +14,8 @@ const authenticate = async (req, res, next) => {
         const user = await User.findById(_id).select("-password");
         if (!user) return res.response(401, "Token is invalid");
 
+        if (!!user?.deletedAt) return res.response(404, "Account not found");
+
         req.user = user;
         next();
     } catch (error) {

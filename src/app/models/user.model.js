@@ -53,6 +53,10 @@ const userSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
+        deletedAt: {
+            type: Date,
+            default: null,
+        },
 
         // hidden fields
         password: {
@@ -83,6 +87,10 @@ userSchema.methods.generateHashedPassword = function () {
     return { hashedPassword: bcrypt.hashSync(unHashedPassword, 10), unHashedPassword };
 };
 
+userSchema.methods.softDelete = async function () {
+    this.deletedAt = new Date();
+    await this.save();
+};
 
 const User = mongoose.model("User", userSchema);
 export default User;

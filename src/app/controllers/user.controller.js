@@ -110,22 +110,19 @@ const del = async (req, res) => {
     try {
         const { password } = req.body;
 
-        const user = await User.findOne({ email: req.user.email });
-        if (!user) {
-            return res.response(400, "Account not found");
+        const user = await User.findOne({ email: req.user.email }).select("+password");
+        if (!user) return res.response(400, "Account not found.");
+
+        if (!(await user.isPasswordCorrect(password))) {
+            return res.response(400, "Password did not match");
         }
 
-        const isCorrectPassword = await user.isPasswordCorrect(password);
-        if (!isCorrectPassword) {
-            return res.response(400, "Pasword didn't match");
-        }
-
-        await userService.delete(user._id)
-        return res.response(200, "Your account has been deleted");
+        await userService.delete(user._id);
+        return res.response(200, "Your account has been deactivated");
     } catch (error) {
-        return res.response(400, "Failed to delete user account", { error: error.message });
+        return res.response(400, "Failed to deactivate user account", { error: error.message });
     }
-}
+};
 
 const esims = async (req, res) => {
     try {

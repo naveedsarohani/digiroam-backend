@@ -44,14 +44,16 @@ const update = async (id, data) => {
     }
 };
 
+// services/userService.js
 const del = async (id) => {
     try {
-        const user = await User.findByIdAndDelete(id);
-        if (!user) throw new Error("User account not found");
+        const user = await User.findById(id);
+        if (!user) throw new Error("User not found");
 
+        await user.softDelete();
         return user;
     } catch (error) {
-        throw new Error(`Error deleting User: ${error.message}`);
+        throw new Error(`Error deleting user: ${error.message}`);
     }
 };
 

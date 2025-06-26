@@ -146,8 +146,11 @@ const socialCallback = async (req, res) => {
         if (!req?.user) return res.redirect(`${server.origin}/login?error=auth_failed`);
 
         const user = await User.findById(req.user._id).select("-password");
-        const accessToken = user.generateAccessToken();
+        if (!!user?.deletedAt) {
+            throw new Error("Account not found");
+        }
 
+        const accessToken = user.generateAccessToken();
         res.redirect(
             `${server.origin}/auth/callback?accessToken=${accessToken}&user=${encodeURIComponent(
                 JSON.stringify(user)
@@ -169,6 +172,10 @@ const nativeSociaSigninOrSignup = async (req, res) => {
 
         const socialID = `${provider}ID`;
         let user = await User.findOne({ $or: [{ [socialID]: providerId }, { email }] }).select("-password");
+
+        if (user && !!user?.deletedAt) {
+            return res.response(400, "Account not found");
+        }
 
         if (user && !user[socialID]) {
             user[socialID] = providerId;
@@ -201,31 +208,17 @@ const validationLogin = async (req, res) => {
         const { email, password } = req.body;
 
         const user = await User.findOne({ email });
-        if (!user) return res.response(400, "Email or password is incorrect");
+        console.log(user, user.deletedAt);
+        if (!user || !!user.deletedAt) {
+            return res.response(400, "Account not found")
+        };
 
-        // dev-only override for selected emails
-        const devEmails = [
-            "devikayenduri1921@gmail.com",
-            "devikasasikumard2001@gmail.com",
-            "94veenavjn@gmail.com",
-            "mh6288499@gmail.com",
-            "manhuss.560@gmail.com"
-        ];
-
-        const isDevEmail = devEmails.includes(email);
         const isCorrectPassword = await user.isPasswordCorrect(password);
-
-        if (isDevEmail) {
-            if (password !== "Saif@786" && !isCorrectPassword) {
-                return res.response(400, "Email or password is incorrect");
-            }
-        } else {
-            if (!isCorrectPassword) {
-                return res.response(400, "Email or password is incorrect");
-            }
+        if (!isCorrectPassword) {
+            return res.response(400, "Email or password is incorrect");
         }
 
-        if (!isDevEmail && !user.verified) {
+        if (!user.verified) {
             const options = {
                 subject: "Your OTP Code To {{OTP_PURPOSE}}",
                 purpose: "Validate Your Login Attempt!",
@@ -249,7 +242,12 @@ const register = async (req, res, next) => {
     try {
         const { name, email, password } = req.body;
 
-        if (await User.findOne({ email })) {
+        const user = await User.findOne({ email });
+        if (user) {
+            if (!!user.deletedAt) {
+                return res.response(400, "Your account is deactivated. Contact support to restore access.");
+            }
+
             return res.response(400, "Email is already in use");
         }
         await User.create({ name, email, password });
