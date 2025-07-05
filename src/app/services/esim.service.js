@@ -29,7 +29,7 @@ export const retrieveByUserId = async (userId) => {
             })
         );
 
-        return allEsims.flat();
+        return allEsims.flat().reverse();
     } catch (error) {
         console.error("eSIM retrieval by user failed:", error.message);
         throw error;
