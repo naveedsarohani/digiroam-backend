@@ -4,6 +4,7 @@ import paymentService from "../services/payment.service.js";
 import emailOnEvent, { retrieveProfiles } from "../../utils/helpers/email.on.event.js";
 import filterRequestBody from "../../utils/helpers/filter.request.body.js";
 import User from "../models/user.model.js";
+import esimService from "../services/esim.service.js";
 
 const index = async (req, res) => {
     try {
@@ -133,15 +134,16 @@ const esims = async (req, res) => {
             return res.response(200, "All user purchased eSims", { esims });
         }
 
-        const payments = await paymentService.retrieveMany({ userId: req.user._id });
-        const orderNos = payments.map(payment => payment.orderNo);
+        // const payments = await paymentService.retrieveMany({ userId: req.user._id });
+        // const orderNos = payments.map(payment => payment.orderNo);
 
-        const esims = await Promise.all(orderNos.map(orderNo => retrieveProfiles({ orderNo })))
-            .then(results => results
-                .filter(result => result.status == "fulfilled")
-                .flatMap(result => result.value)
-            );
+        // const esims = await Promise.allSettled(orderNos.map(orderNo => retrieveProfiles({ orderNo })))
+        //     .then(results => results
+        //         .filter(result => result.status == "fulfilled")
+        //         .flatMap(result => result.value)
+        //     );
 
+        const esims = await esimService.retrieveByUserId(req.user._id);
         return res.response(200, "All user purchased eSims", { esims });
     } catch (error) {
         return res.response(400, "Failed to retrieve user eSims", { error: error.message });

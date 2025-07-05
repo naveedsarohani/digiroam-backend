@@ -2,6 +2,7 @@ import paymentService from "../services/payment.service.js";
 import filterRequestBody from "../../utils/helpers/filter.request.body.js";
 import Cart from "../models/cart.model.js";
 import emailOnEvent from "../../utils/helpers/email.on.event.js";
+import esimService from "../services/esim.service.js";
 
 const store = async (req, res) => {
     try {
@@ -16,6 +17,7 @@ const store = async (req, res) => {
         const payment = await paymentService.create({ userId: req.user._id, ...data });
         if (!payment) return res.response(400, "Failed to save payment details");
 
+        await esimService.create(req.user._id, payment.orderNo);
         await Cart.findOneAndDelete({ userId: req.user._id });
 
         return res.response(201, "Payment stored successfully, and cart cleared");
@@ -35,12 +37,12 @@ const payments = async (req, res) => {
 }
 
 const webHook = async (req, res) => {
-    console.log("Welcome from webhook controller ;-)");
     try {
         const { notifyType, content } = req.body;
         const { orderNo, transactionId, iccid, remain, esimStatus, smdpStatus, totalVolume, expiredTime } = content;
 
-        console.log("NotifyType: ", notifyType);
+        if (!!iccid) esimService.updateByIccid(iccid);
+
         const payment = await paymentService.retrieveOne({ transactionId });
         if (!payment) return res.response(404, "Payment record not found for the given orderNo");
 
