@@ -19,7 +19,7 @@ paymentRoutes.get("/getMyPaymentInfo",
 );
 
 paymentRoutes.post("/webhook/notifications",
-    schema.validator(paymentSchema.webhook),
+    // schema.validator(paymentSchema.webhook),
     paymentController.webHook
 );
 

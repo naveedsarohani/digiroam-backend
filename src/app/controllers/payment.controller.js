@@ -35,6 +35,7 @@ const payments = async (req, res) => {
 }
 
 const webHook = async (req, res) => {
+    console.log("Welcome from webhook controller ;-)");
     try {
         const { notifyType, content } = req.body;
         const { orderNo, transactionId, iccid, remain, esimStatus, smdpStatus, totalVolume, expiredTime } = content;
