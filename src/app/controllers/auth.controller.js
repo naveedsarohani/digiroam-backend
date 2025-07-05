@@ -133,7 +133,6 @@ const appleLoginStrategy = (passport) => {
 
                     return done(null, newUser);
                 } catch (error) {
-                    console.error("Apple login error:", error);
                     return done(error, null);
                 }
             }
@@ -157,7 +156,6 @@ const socialCallback = async (req, res) => {
             )}`
         );
     } catch (error) {
-        console.error("Social Callback Error:", error);
         res.redirect(`${server.origin}/login?error=${encodeURIComponent(error.message)}`);
     }
 };
@@ -208,7 +206,6 @@ const validationLogin = async (req, res) => {
         const { email, password } = req.body;
 
         const user = await User.findOne({ email });
-        console.log(user, user.deletedAt);
         if (!user || !!user.deletedAt) {
             return res.response(400, "Account not found")
         };

@@ -120,7 +120,6 @@ export const stripePaymentIntentForNative = async (req, res) => {
             publishableKey: payments.stripe.publicKey
         });
     } catch (error) {
-        console.error("Stripe PaymentIntent Error:", error);
         return res.response(400, "Failed to create PaymentIntent", { error: error.message });
     }
 };

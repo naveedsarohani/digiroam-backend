@@ -10,7 +10,6 @@ const upsert = async (req, res) => {
 
         return res.response(201, "OK", { buynow });
     } catch (error) {
-        console.log(error);
         return res.response(400, "Failed to set buy now item", { error: error.message });
     }
 }
@@ -20,7 +19,6 @@ const clear = async (req, res) => {
         await Buynow.findOneAndDelete({ userId: req.user._id });
         return res.response(201, "Cleared");
     } catch (error) {
-        console.log(error);
         return res.response(400, "Failed to clear buy now item", { error: error.message });
     }
 };

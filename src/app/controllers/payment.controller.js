@@ -39,6 +39,7 @@ const webHook = async (req, res) => {
         const { notifyType, content } = req.body;
         const { orderNo, transactionId, iccid, remain, esimStatus, smdpStatus, totalVolume, expiredTime } = content;
 
+        console.log("NotifyType: ", notifyType);
         const payment = await paymentService.retrieveOne({ transactionId });
         if (!payment) return res.response(404, "Payment record not found for the given orderNo");
 
@@ -65,7 +66,6 @@ const webHook = async (req, res) => {
                 break;
 
             default:
-                console.log(`Unhandled notifyType: ${notifyType}`);
                 break;
         }
 
