@@ -200,6 +200,7 @@ const orderPurchase = async (orderNo, user) => {
 const orderCencel = async (iccid, user) => {
     try {
         const profile = (await retrieveProfiles({ iccid })).at(0);
+        console.log("ICCID: ", iccid, "Profile: ", profile);
         const template = await emailTemplateService.retrieveOne({ eventName: "ON_CANCEL" });
         const { emailAddress, phoneNumber } = await retrieveEmailAndPhone();
 
