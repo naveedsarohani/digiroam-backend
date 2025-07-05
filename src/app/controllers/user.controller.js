@@ -124,29 +124,73 @@ const del = async (req, res) => {
     }
 };
 
+// const esims = async (req, res) => {
+//     try {
+//         const { orderNo } = req.query;
+
+//         if (orderNo) {
+//             const esims = await retrieveProfiles({ orderNo });
+//             return res.response(200, "All user purchased eSims", { esims });
+//         }
+
+//         const payments = await paymentService.retrieveMany({ userId: req.user._id });
+//         const orderNos = payments.map(payment => payment.orderNo);
+
+//         const esims = await Promise.allSettled(orderNos.map(orderNo => retrieveProfiles({ orderNo })))
+//             .then(results => results
+//                 .filter(result => result.status === "fulfilled")
+//                 .flatMap(result => result.value)
+//             );
+
+//         return res.response(200, "All user purchased eSims", { esims });
+//     } catch (error) {
+//         return res.response(400, "Failed to retrieve user eSims", { error: error.message });
+//     }
+// };
+
 const esims = async (req, res) => {
     try {
         const { orderNo } = req.query;
 
         if (orderNo) {
             const esims = await retrieveProfiles({ orderNo });
-            return res.response(200, "All user purchased eSims", { esims });
+            return res.response(200, "All user purchased eSIMs", { esims });
         }
 
-        const payments = await paymentService.retrieveMany({ userId: req.user._id });
-        const orderNos = payments.map(payment => payment.orderNo);
+        const payments = await paymentService.retrieveMany({
+            userId: req.user._id
+        });
 
-        const esims = await Promise.allSettled(orderNos.map(orderNo => retrieveProfiles({ orderNo })))
-            .then(results => results
-                .filter(result => result.status === "fulfilled")
-                .flatMap(result => result.value)
-            );
+        const orderNos = payments
+            .map(payment => payment.orderNo)
+            .filter(Boolean);
 
-        return res.response(200, "All user purchased eSims", { esims });
+        const results = await Promise.allSettled(
+            orderNos.map(orderNo => retrieveProfiles({ orderNo }))
+        );
+
+        const allEsims = results
+            .filter(result => result.status === "fulfilled")
+            .flatMap(result => result.value);
+
+        const uniqueEsims = Array.from(
+            new Map(allEsims.map(esim => [esim.iccid, esim])).values()
+        );
+
+        // Sort by expiredTime (latest first), fallback to createTime of package
+        uniqueEsims.sort((a, b) => {
+            const aTime = new Date(a.expiredTime || a.packageList?.[0]?.createTime || 0);
+            const bTime = new Date(b.expiredTime || b.packageList?.[0]?.createTime || 0);
+            return bTime - aTime;
+        });
+
+        return res.response(200, "All user purchased eSIMs", { esims: uniqueEsims });
     } catch (error) {
-        return res.response(400, "Failed to retrieve user eSims", { error: error.message });
+        console.error("eSIM retrieval error:", error);
+        return res.response(400, "Failed to retrieve user eSIMs", { error: error.message });
     }
 };
+
 
 const assignRole = async (req, res, next) => {
     try {
