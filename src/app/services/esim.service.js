@@ -17,7 +17,7 @@ export const create = async (userId, orderNo) => {
 
 export const retrieveByUserId = async (userId) => {
     try {
-        const payments = await Payment.find({ userId, status: "COMPLETED" });
+        const payments = await Payment.find({ userId });
         const orderNos = payments.map(p => p.orderNo).filter(Boolean);
 
         const allEsims = await Promise.all(
@@ -25,8 +25,7 @@ export const retrieveByUserId = async (userId) => {
                 const existing = await Esim.find({ orderNo });
                 if (existing.length > 0) return existing;
 
-                const newEsims = await create(userId, orderNo);
-                return newEsims;
+                return await create(userId, orderNo);
             })
         );
 
