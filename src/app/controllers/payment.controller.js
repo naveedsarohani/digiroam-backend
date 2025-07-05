@@ -73,6 +73,7 @@ const webHook = async (req, res) => {
         await paymentService.update(payment._id, { status: payment.status });
         return res.response(200, "OK");
     } catch (error) {
+        console.log("error:", error, "error message: ", error.message);
         return res.response(500, "Internal Server Error");
     }
 }
